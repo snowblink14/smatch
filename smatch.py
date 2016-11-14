@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 
 """
 This script computes smatch score between two AMRs.
@@ -19,6 +20,7 @@ iteration_num = 5
 # verbose output switch.
 # Default false (no verbose output)
 verbose = False
+veryVerbose = False
 
 # single score output switch.
 # Default true (compute a single score for all AMRs in two files)
@@ -76,12 +78,18 @@ def build_arg_parser():
     parser.add_argument('-f', nargs=2, required=True, type=argparse.FileType('r'),
                         help='Two files containing AMR pairs. AMRs in each file are separated by a single blank line')
     parser.add_argument('-r', type=int, default=4, help='Restart number (Default:4)')
+    parser.add_argument('--significant', type=int, default=2, help='significant digits to output (default: 2)')
     parser.add_argument('-v', action='store_true', help='Verbose output (Default:false)')
+    parser.add_argument('--vv', action='store_true', help='Very Verbose output (Default:false)')
     parser.add_argument('--ms', action='store_true', default=False,
                         help='Output multiple scores (one AMR pair a score)' \
                              'instead of a single document-level smatch score (Default: false)')
     parser.add_argument('--pr', action='store_true', default=False,
                         help="Output precision and recall as well as the f-score. Default: false")
+    parser.add_argument('--justinstance', action='store_true', default=False, help="just pay attention to matching instances")
+    parser.add_argument('--justattribute', action='store_true', default=False, help="just pay attention to matching attributes")
+    parser.add_argument('--justrelation', action='store_true', default=False, help="just pay attention to matching relations")
+
     return parser
 
 
@@ -96,19 +104,24 @@ def build_arg_parser2():
                       help='Two files containing AMR pairs. AMRs in each file are ' \
                            'separated by a single blank line. This option is required.')
     parser.add_option("-r", "--restart", dest="r", type="int", help='Restart number (Default: 4)')
+    parser.add_option('--significant', dest="significant", type="int", default=2, help='significant digits to output (default: 2)')
     parser.add_option("-v", "--verbose", action='store_true', dest="v", help='Verbose output (Default:False)')
+    parser.add_option("--vv", "--veryverbose", action='store_true', dest="vv", help='Very Verbose output (Default:False)')
     parser.add_option("--ms", "--multiple_score", action='store_true', dest="ms",
                       help='Output multiple scores (one AMR pair a score) instead of ' \
                            'a single document-level smatch score (Default: False)')
     parser.add_option('--pr', "--precision_recall", action='store_true', dest="pr",
                       help="Output precision and recall as well as the f-score. Default: false")
+    parser.add_option('--justinstance', action='store_true', default=False, help="just pay attention to matching instances")
+    parser.add_option('--justattribute', action='store_true', default=False, help="just pay attention to matching attributes")
+    parser.add_option('--justrelation', action='store_true', default=False, help="just pay attention to matching relations")
     parser.set_defaults(r=4, v=False, ms=False, pr=False)
     return parser
 
 
 def get_best_match(instance1, attribute1, relation1,
                    instance2, attribute2, relation2,
-                   prefix1, prefix2):
+                   prefix1, prefix2, doinstance=True, doattribute=True, dorelation=True):
     """
     Get the highest triple match number between two sets of triples via hill-climbing.
     Arguments:
@@ -130,8 +143,8 @@ def get_best_match(instance1, attribute1, relation1,
     # weight_dict is a dictionary that maps a pair of node
     (candidate_mappings, weight_dict) = compute_pool(instance1, attribute1, relation1,
                                                      instance2, attribute2, relation2,
-                                                     prefix1, prefix2)
-    if verbose:
+                                                     prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
+    if veryVerbose:
         print >> DEBUG_LOG, "Candidate mappings:"
         print >> DEBUG_LOG, candidate_mappings
         print >> DEBUG_LOG, "Weight dictionary"
@@ -141,7 +154,7 @@ def get_best_match(instance1, attribute1, relation1,
     # the ith entry is the node index in AMR 2 which maps to the ith node in AMR 1
     best_mapping = [-1] * len(instance1)
     for i in range(0, iteration_num):
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "Iteration", i
         if i == 0:
             # smart initialization used for the first round
@@ -151,14 +164,14 @@ def get_best_match(instance1, attribute1, relation1,
             cur_mapping = random_init_mapping(candidate_mappings)
         # compute current triple match number
         match_num = compute_match(cur_mapping, weight_dict)
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "Node mapping at start", cur_mapping
             print >> DEBUG_LOG, "Triple match number at start:", match_num
         while True:
             # get best gain
             (gain, new_mapping) = get_best_gain(cur_mapping, candidate_mappings, weight_dict,
                                                 len(instance2), match_num)
-            if verbose:
+            if veryVerbose:
                 print >> DEBUG_LOG, "Gain after the hill-climbing", gain
             # hill-climbing until there will be no gain for new node mapping
             if gain <= 0:
@@ -166,7 +179,7 @@ def get_best_match(instance1, attribute1, relation1,
             # otherwise update match_num and mapping
             match_num += gain
             cur_mapping = new_mapping[:]
-            if verbose:
+            if veryVerbose:
                 print >> DEBUG_LOG, "Update triple match number to:", match_num
                 print >> DEBUG_LOG, "Current mapping:", cur_mapping
         if match_num > best_match_num:
@@ -183,7 +196,7 @@ def normalize(item):
 
 def compute_pool(instance1, attribute1, relation1,
                  instance2, attribute2, relation2,
-                 prefix1, prefix2):
+                 prefix1, prefix2, doinstance=True, doattribute=True, dorelation=True):
     """
     compute all possible node mapping candidates and their weights (the triple matching number gain resulting from
     mapping one node in AMR 1 to another node in AMR2)
@@ -213,83 +226,86 @@ def compute_pool(instance1, attribute1, relation1,
     for i in range(0, len(instance1)):
         # each candidate mapping is a set of node indices
         candidate_mapping.append(set())
-        for j in range(0, len(instance2)):
-            # if both triples are instance triples and have the same value
-            if normalize(instance1[i][0]) == normalize(instance2[j][0]) and \
-               normalize(instance1[i][2]) == normalize(instance2[j][2]):
-                # get node index by stripping the prefix
-                node1_index = int(instance1[i][1][len(prefix1):])
-                node2_index = int(instance2[j][1][len(prefix2):])
-                candidate_mapping[node1_index].add(node2_index)
-                node_pair = (node1_index, node2_index)
-                # use -1 as key in weight_dict for instance triples and attribute triples
-                if node_pair in weight_dict:
-                    weight_dict[node_pair][-1] += 1
-                else:
-                    weight_dict[node_pair] = {}
-                    weight_dict[node_pair][-1] = 1
-    for i in range(0, len(attribute1)):
-        for j in range(0, len(attribute2)):
-            # if both attribute relation triple have the same relation name and value
-            if normalize(attribute1[i][0]) == normalize(attribute2[j][0]) \
-               and normalize(attribute1[i][2]) == normalize(attribute2[j][2]):
-                node1_index = int(attribute1[i][1][len(prefix1):])
-                node2_index = int(attribute2[j][1][len(prefix2):])
-                candidate_mapping[node1_index].add(node2_index)
-                node_pair = (node1_index, node2_index)
-                # use -1 as key in weight_dict for instance triples and attribute triples
-                if node_pair in weight_dict:
-                    weight_dict[node_pair][-1] += 1
-                else:
-                    weight_dict[node_pair] = {}
-                    weight_dict[node_pair][-1] = 1
-    for i in range(0, len(relation1)):
-        for j in range(0, len(relation2)):
-            # if both relation share the same name
-            if normalize(relation1[i][0]) == normalize(relation2[j][0]):
-                node1_index_amr1 = int(relation1[i][1][len(prefix1):])
-                node1_index_amr2 = int(relation2[j][1][len(prefix2):])
-                node2_index_amr1 = int(relation1[i][2][len(prefix1):])
-                node2_index_amr2 = int(relation2[j][2][len(prefix2):])
-                # add mapping between two nodes
-                candidate_mapping[node1_index_amr1].add(node1_index_amr2)
-                candidate_mapping[node2_index_amr1].add(node2_index_amr2)
-                node_pair1 = (node1_index_amr1, node1_index_amr2)
-                node_pair2 = (node2_index_amr1, node2_index_amr2)
-                if node_pair2 != node_pair1:
-                    # update weight_dict weight. Note that we need to update both entries for future search
-                    # i.e weight_dict[node_pair1][node_pair2]
-                    #     weight_dict[node_pair2][node_pair1]
-                    if node1_index_amr1 > node2_index_amr1:
-                        # swap node_pair1 and node_pair2
-                        node_pair1 = (node2_index_amr1, node2_index_amr2)
-                        node_pair2 = (node1_index_amr1, node1_index_amr2)
-                    if node_pair1 in weight_dict:
-                        if node_pair2 in weight_dict[node_pair1]:
-                            weight_dict[node_pair1][node_pair2] += 1
-                        else:
-                            weight_dict[node_pair1][node_pair2] = 1
+        if doinstance:
+            for j in range(0, len(instance2)):
+                # if both triples are instance triples and have the same value
+                if normalize(instance1[i][0]) == normalize(instance2[j][0]) and \
+                   normalize(instance1[i][2]) == normalize(instance2[j][2]):
+                    # get node index by stripping the prefix
+                    node1_index = int(instance1[i][1][len(prefix1):])
+                    node2_index = int(instance2[j][1][len(prefix2):])
+                    candidate_mapping[node1_index].add(node2_index)
+                    node_pair = (node1_index, node2_index)
+                    # use -1 as key in weight_dict for instance triples and attribute triples
+                    if node_pair in weight_dict:
+                        weight_dict[node_pair][-1] += 1
                     else:
-                        weight_dict[node_pair1] = {}
-                        weight_dict[node_pair1][-1] = 0
-                        weight_dict[node_pair1][node_pair2] = 1
-                    if node_pair2 in weight_dict:
-                        if node_pair1 in weight_dict[node_pair2]:
-                            weight_dict[node_pair2][node_pair1] += 1
+                        weight_dict[node_pair] = {}
+                        weight_dict[node_pair][-1] = 1
+    if doattribute:
+        for i in range(0, len(attribute1)):
+            for j in range(0, len(attribute2)):
+                # if both attribute relation triple have the same relation name and value
+                if normalize(attribute1[i][0]) == normalize(attribute2[j][0]) \
+                   and normalize(attribute1[i][2]) == normalize(attribute2[j][2]):
+                    node1_index = int(attribute1[i][1][len(prefix1):])
+                    node2_index = int(attribute2[j][1][len(prefix2):])
+                    candidate_mapping[node1_index].add(node2_index)
+                    node_pair = (node1_index, node2_index)
+                    # use -1 as key in weight_dict for instance triples and attribute triples
+                    if node_pair in weight_dict:
+                        weight_dict[node_pair][-1] += 1
+                    else:
+                        weight_dict[node_pair] = {}
+                        weight_dict[node_pair][-1] = 1
+    if dorelation:
+        for i in range(0, len(relation1)):
+            for j in range(0, len(relation2)):
+                # if both relation share the same name
+                if normalize(relation1[i][0]) == normalize(relation2[j][0]):
+                    node1_index_amr1 = int(relation1[i][1][len(prefix1):])
+                    node1_index_amr2 = int(relation2[j][1][len(prefix2):])
+                    node2_index_amr1 = int(relation1[i][2][len(prefix1):])
+                    node2_index_amr2 = int(relation2[j][2][len(prefix2):])
+                    # add mapping between two nodes
+                    candidate_mapping[node1_index_amr1].add(node1_index_amr2)
+                    candidate_mapping[node2_index_amr1].add(node2_index_amr2)
+                    node_pair1 = (node1_index_amr1, node1_index_amr2)
+                    node_pair2 = (node2_index_amr1, node2_index_amr2)
+                    if node_pair2 != node_pair1:
+                        # update weight_dict weight. Note that we need to update both entries for future search
+                        # i.e weight_dict[node_pair1][node_pair2]
+                        #     weight_dict[node_pair2][node_pair1]
+                        if node1_index_amr1 > node2_index_amr1:
+                            # swap node_pair1 and node_pair2
+                            node_pair1 = (node2_index_amr1, node2_index_amr2)
+                            node_pair2 = (node1_index_amr1, node1_index_amr2)
+                        if node_pair1 in weight_dict:
+                            if node_pair2 in weight_dict[node_pair1]:
+                                weight_dict[node_pair1][node_pair2] += 1
+                            else:
+                                weight_dict[node_pair1][node_pair2] = 1
                         else:
+                            weight_dict[node_pair1] = {}
+                            weight_dict[node_pair1][-1] = 0
+                            weight_dict[node_pair1][node_pair2] = 1
+                        if node_pair2 in weight_dict:
+                            if node_pair1 in weight_dict[node_pair2]:
+                                weight_dict[node_pair2][node_pair1] += 1
+                            else:
+                                weight_dict[node_pair2][node_pair1] = 1
+                        else:
+                            weight_dict[node_pair2] = {}
+                            weight_dict[node_pair2][-1] = 0
                             weight_dict[node_pair2][node_pair1] = 1
                     else:
-                        weight_dict[node_pair2] = {}
-                        weight_dict[node_pair2][-1] = 0
-                        weight_dict[node_pair2][node_pair1] = 1
-                else:
-                    # two node pairs are the same. So we only update weight_dict once.
-                    # this generally should not happen.
-                    if node_pair1 in weight_dict:
-                        weight_dict[node_pair1][-1] += 1
-                    else:
-                        weight_dict[node_pair1] = {}
-                        weight_dict[node_pair1][-1] = 1
+                        # two node pairs are the same. So we only update weight_dict once.
+                        # this generally should not happen.
+                        if node_pair1 in weight_dict:
+                            weight_dict[node_pair1][-1] += 1
+                        else:
+                            weight_dict[node_pair1] = {}
+                            weight_dict[node_pair1][-1] = 1
     return candidate_mapping, weight_dict
 
 
@@ -390,11 +406,11 @@ def compute_match(mapping, weight_dict):
 
     """
     # If this mapping has been investigated before, retrieve the value instead of re-computing.
-    if verbose:
+    if veryVerbose:
         print >> DEBUG_LOG, "Computing match for mapping"
         print >> DEBUG_LOG, mapping
     if tuple(mapping) in match_triple_dict:
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "saved value", match_triple_dict[tuple(mapping)]
         return match_triple_dict[tuple(mapping)]
     match_num = 0
@@ -407,13 +423,13 @@ def compute_match(mapping, weight_dict):
         current_node_pair = (i, m)
         if current_node_pair not in weight_dict:
             continue
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "node_pair", current_node_pair
         for key in weight_dict[current_node_pair]:
             if key == -1:
                 # matching triple resulting from instance/attribute triples
                 match_num += weight_dict[current_node_pair][key]
-                if verbose:
+                if veryVerbose:
                     print >> DEBUG_LOG, "instance/attribute match", weight_dict[current_node_pair][key]
             # only consider node index larger than i to avoid duplicates
             # as we store both weight_dict[node_pair1][node_pair2] and
@@ -422,9 +438,9 @@ def compute_match(mapping, weight_dict):
                 continue
             elif mapping[key[0]] == key[1]:
                 match_num += weight_dict[current_node_pair][key]
-                if verbose:
+                if veryVerbose:
                     print >> DEBUG_LOG, "relation match with", key, weight_dict[current_node_pair][key]
-    if verbose:
+    if veryVerbose:
         print >> DEBUG_LOG, "match computing complete, result:", match_num
     # update match_triple_dict
     match_triple_dict[tuple(mapping)] = match_num
@@ -577,10 +593,10 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
             if nm in candidate_mappings[i]:
                 # remap i to another unmatched node (move)
                 # (i, m) -> (i, nm)
-                if verbose:
+                if veryVerbose:
                     print >> DEBUG_LOG, "Remap node", i, "from ", nid, "to", nm
                 mv_gain = move_gain(mapping, i, nid, nm, weight_dict, cur_match_num)
-                if verbose:
+                if veryVerbose:
                     print >> DEBUG_LOG, "Move gain:", mv_gain
                     new_mapping = mapping[:]
                     new_mapping[i] = nm
@@ -600,13 +616,13 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
             m2 = mapping[j]
             # swap operation (i, m) (j, m2) -> (i, m2) (j, m)
             # j starts from i+1, to avoid duplicate swap
-            if verbose:
+            if veryVerbose:
                 print >> DEBUG_LOG, "Swap node", i, "and", j
                 print >> DEBUG_LOG, "Before swapping:", i, "-", m, ",", j, "-", m2
                 print >> DEBUG_LOG, mapping
                 print >> DEBUG_LOG, "After swapping:", i, "-", m2, ",", j, "-", m
             sw_gain = swap_gain(mapping, i, m, j, m2, weight_dict, cur_match_num)
-            if verbose:
+            if veryVerbose:
                 print >> DEBUG_LOG, "Swap gain:", sw_gain
                 new_mapping = mapping[:]
                 new_mapping[i] = m2
@@ -625,19 +641,19 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
     cur_mapping = mapping[:]
     if node1 is not None:
         if use_swap:
-            if verbose:
+            if veryVerbose:
                 print >> DEBUG_LOG, "Use swap gain"
             temp = cur_mapping[node1]
             cur_mapping[node1] = cur_mapping[node2]
             cur_mapping[node2] = temp
         else:
-            if verbose:
+            if veryVerbose:
                 print >> DEBUG_LOG, "Use move gain"
             cur_mapping[node1] = node2
     else:
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "no move/swap gain found"
-    if verbose:
+    if veryVerbose:
         print >> DEBUG_LOG, "Original mapping", mapping
         print >> DEBUG_LOG, "Current mapping", cur_mapping
     return largest_gain, cur_mapping
@@ -682,11 +698,11 @@ def compute_f(match_num, test_num, gold_num):
     recall = float(match_num) / float(gold_num)
     if (precision + recall) != 0:
         f_score = 2 * precision * recall / (precision + recall)
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "F-score:", f_score
         return precision, recall, f_score
     else:
-        if verbose:
+        if veryVerbose:
             print >> DEBUG_LOG, "F-score:", "0.0"
         return precision, recall, 0.00
 
@@ -697,6 +713,7 @@ def main(arguments):
 
     """
     global verbose
+    global veryVerbose
     global iteration_num
     global single_score
     global pr_flag
@@ -708,8 +725,23 @@ def main(arguments):
         single_score = False
     if arguments.v:
         verbose = True
+    if arguments.vv:
+        veryVerbose = True
     if arguments.pr:
         pr_flag = True
+    # optionally turn off some of the node comparison
+    doinstance=True
+    doattribute=True
+    dorelation=True
+    if arguments.justinstance:
+        doattribute=False
+        dorelation=False
+    if arguments.justattribute:
+        doinstance=False
+        dorelation=False
+    if arguments.justrelation:
+        doinstance=False
+        doattribute=False
     # matching triple number
     total_match_num = 0
     # triple number in test file
@@ -718,6 +750,8 @@ def main(arguments):
     total_gold_num = 0
     # sentence number
     sent_num = 1
+    # significant digits to print out
+    floatdisplay = "%%.%df" % arguments.significant
     # Read amr pairs from two files
     while True:
         cur_amr1 = get_amr_line(args.f[0])
@@ -762,13 +796,23 @@ def main(arguments):
             print >> DEBUG_LOG, relation2
         (best_mapping, best_match_num) = get_best_match(instance1, attributes1, relation1,
                                                         instance2, attributes2, relation2,
-                                                        prefix1, prefix2)
+                                                        prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
         if verbose:
             print >> DEBUG_LOG, "best match number", best_match_num
             print >> DEBUG_LOG, "best node mapping", best_mapping
             print >> DEBUG_LOG, "Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2)
-        test_triple_num = len(instance1) + len(attributes1) + len(relation1)
-        gold_triple_num = len(instance2) + len(attributes2) + len(relation2)
+        if arguments.justinstance:
+            test_triple_num = len(instance1)
+            gold_triple_num = len(instance2)
+        elif arguments.justattribute:
+            test_triple_num = len(attributes1)
+            gold_triple_num = len(attributes2)
+        elif arguments.justrelation:
+            test_triple_num = len(relation1)
+            gold_triple_num = len(relation2)
+        else:
+            test_triple_num = len(instance1) + len(attributes1) + len(relation1)
+            gold_triple_num = len(instance2) + len(attributes2) + len(relation2)
         if not single_score:
             # if each AMR pair should have a score, compute and output it here
             (precision, recall, best_f_score) = compute_f(best_match_num,
@@ -776,10 +820,9 @@ def main(arguments):
                                                           gold_triple_num)
             #print "Sentence", sent_num
             if pr_flag:
-                print "Precision: %.2f" % precision
-                print "Recall: %.2f" % recall
-#            print "Smatch score: %.2f" % best_f_score
-            print "%.4f" % best_f_score
+                print "Precision: "+floatdisplay % precision
+                print "Recall: "+floatdisplay % recall
+            print "F-score: "+floatdisplay % best_f_score
         total_match_num += best_match_num
         total_test_num += test_triple_num
         total_gold_num += gold_triple_num
@@ -794,9 +837,9 @@ def main(arguments):
     if single_score:
         (precision, recall, best_f_score) = compute_f(total_match_num, total_test_num, total_gold_num)
         if pr_flag:
-            print "Precision: %.2f" % precision
-            print "Recall: %.2f" % recall
-        print "Document F-score: %.2f" % best_f_score
+            print "Precision: "+floatdisplay % precision
+            print "Recall: "+floatdisplay % recall
+        print "F-score: "+floatdisplay % best_f_score
     args.f[0].close()
     args.f[1].close()
 
