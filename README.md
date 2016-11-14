@@ -1,7 +1,9 @@
-# Smatch: a tool to evaluate AMR (Abstract Meaning Representation
+# Smatch (semantic match) tool
 
-This is source code of [smatch](http://amr.isi.edu/evaluation.html). It is now hosted on github for better collaboration.
+This is source code of [smatch](http://amr.isi.edu/evaluation.html), an evaluation tool for AMR (Abstract Meaning Representation). 
 
-More details and updates about AMR and smatch can be found in isi's AMR site: http://amr.isi.edu/index.html
+The code was mostly developed during 2012-2013, and has undergone many fixes and updates. It is now hosted on github for better collaboration.
 
-Last update: 2016/11/10.
+More details and updates about AMR and smatch can be found in USC/ISI's AMR site: http://amr.isi.edu/index.html
+
+Last update: 2016/11/14.
