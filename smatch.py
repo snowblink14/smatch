@@ -174,6 +174,12 @@ def get_best_match(instance1, attribute1, relation1,
             best_match_num = match_num
     return best_mapping, best_match_num
 
+def normalize(item):
+    """
+    lowercase and remove quote signifiers from items that are about to be compared
+    """
+    item = item.lower().rstrip('_')
+    return item
 
 def compute_pool(instance1, attribute1, relation1,
                  instance2, attribute2, relation2,
@@ -209,8 +215,8 @@ def compute_pool(instance1, attribute1, relation1,
         candidate_mapping.append(set())
         for j in range(0, len(instance2)):
             # if both triples are instance triples and have the same value
-            if instance1[i][0].lower() == instance2[j][0].lower() \
-                    and instance1[i][2].lower() == instance2[j][2].lower():
+            if normalize(instance1[i][0]) == normalize(instance2[j][0]) and \
+               normalize(instance1[i][2]) == normalize(instance2[j][2]):
                 # get node index by stripping the prefix
                 node1_index = int(instance1[i][1][len(prefix1):])
                 node2_index = int(instance2[j][1][len(prefix2):])
@@ -225,8 +231,8 @@ def compute_pool(instance1, attribute1, relation1,
     for i in range(0, len(attribute1)):
         for j in range(0, len(attribute2)):
             # if both attribute relation triple have the same relation name and value
-            if attribute1[i][0].lower() == attribute2[j][0].lower() \
-                    and attribute1[i][2].lower() == attribute2[j][2].lower():
+            if normalize(attribute1[i][0]) == normalize(attribute2[j][0]) \
+               and normalize(attribute1[i][2]) == normalize(attribute2[j][2]):
                 node1_index = int(attribute1[i][1][len(prefix1):])
                 node2_index = int(attribute2[j][1][len(prefix2):])
                 candidate_mapping[node1_index].add(node2_index)
@@ -240,7 +246,7 @@ def compute_pool(instance1, attribute1, relation1,
     for i in range(0, len(relation1)):
         for j in range(0, len(relation2)):
             # if both relation share the same name
-            if relation1[i][0].lower() == relation2[j][0].lower():
+            if normalize(relation1[i][0]) == normalize(relation2[j][0]):
                 node1_index_amr1 = int(relation1[i][1][len(prefix1):])
                 node1_index_amr2 = int(relation2[j][1][len(prefix2):])
                 node2_index_amr1 = int(relation1[i][2][len(prefix1):])

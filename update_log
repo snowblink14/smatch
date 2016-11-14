@@ -63,3 +63,8 @@ Update: 11/06/2016
 Person involved: Shu Cai
 Fix a bug: not supporting multiple relationships between two (same) nodes
 Thanks Marco Damonte (s1333293@sms.ed.ac.uk) for finding this bug!
+
+Update: 11/14/2016
+Person involved: Jon May
+Fix a bug: quoted and unquoted strings match (propagation of old bug to github)
+Thanks William Dolan
