@@ -80,11 +80,9 @@ class AMR(object):
         for i, v in enumerate(self.nodes):
             self.nodes[i] = node_map_dict[v]
         # update node name in relations
-        for i, d in enumerate(self.relations):
-            new_dict = {}
-            for k, v in d.items():
-                new_dict[k] = node_map_dict[v]
-            self.relations[i] = new_dict
+        for node_relations in self.relations:
+            for i, l in enumerate(node_relations):
+                node_relations[i][1] = node_map_dict[l[1]]
   
     def get_triples(self):
         """
@@ -99,14 +97,14 @@ class AMR(object):
         attribute_triple = []
         for i in range(len(self.nodes)):
             instance_triple.append(("instance", self.nodes[i], self.node_values[i]))
-            # k is relation name
-            # v is the other node this node has relation with
-            for k, v in self.relations[i].items():
-                relation_triple.append((k, self.nodes[i], v))
-            # k2 is the attribute name
-            # v2 is the attribute value
-            for k2, v2 in self.attributes[i].items():
-                attribute_triple.append((k2, self.nodes[i], v2))
+            # l[0] is relation name
+            # l[1] is the other node this node has relation with
+            for l in self.relations[i]:
+                relation_triple.append((l[0], self.nodes[i], l[1]))
+            # l[0] is the attribute name
+            # l[1] is the attribute value
+            for l in self.attributes[i]:
+                attribute_triple.append((l[0], self.nodes[i], l[1]))
         return instance_triple, attribute_triple, relation_triple
 
 
@@ -126,14 +124,14 @@ class AMR(object):
             # an instance triple is instance(node name, node value).
             # For example, instance(b, boy).
             instance_triple.append(("instance", self.nodes[i], self.node_values[i]))
-            # k is relation name
-            # v is the other node this node has relation with
-            for k, v in self.relations[i].items():
-                relation_triple.append((k, self.nodes[i], v))
-            # k2 is the attribute name
-            # v2 is the attribute value
-            for k2, v2 in self.attributes[i].items():
-                relation_triple.append((k2, self.nodes[i], v2))
+            # l[0] is relation name
+            # l[1] is the other node this node has relation with
+            for l in self.relations[i]:
+                relation_triple.append((l[0], self.nodes[i], l[1]))
+            # l[0] is the attribute name
+            # l[1] is the attribute value
+            for l in self.attributes[i]:
+                relation_triple.append((l[0], self.nodes[i], l[1]))
         return instance_triple, relation_triple
 
 
@@ -372,28 +370,28 @@ class AMR(object):
                 return None
             else:
                 node_value_list.append(node_dict[v])
-            # build relation map and attribute map for this node
-            relation_dict = {}
-            attribute_dict = {}
+            # build relation list and attribute list for this node
+            node_rel_list = []
+            node_attr_list = []
             if v in node_relation_dict1:
                 for v1 in node_relation_dict1[v]:
-                    relation_dict[v1[0]] = v1[1]
+                    node_rel_list.append([v1[0], v1[1]])
             if v in node_relation_dict2:
                 for v2 in node_relation_dict2[v]:
                     # if value is in quote, it is a constant value
                     # strip the quote and put it in attribute map
                     if v2[1][0] == "\"" and v2[1][-1] == "\"":
-                        attribute_dict[v2[0]] = v2[1][1:-1]
+                        node_attr_list.append([[v2[0]], v2[1][1:-1]])
                     # if value is a node name
                     elif v2[1] in node_dict:
-                        relation_dict[v2[0]] = v2[1]
+                        node_rel_list.append([[v2[0]], v2[1]])
                     else:
-                        attribute_dict[v2[0]] = v2[1]
-            # each node has a relation map and attribute map
-            relation_list.append(relation_dict)
-            attribute_list.append(attribute_dict)
+                        node_attr_list.append([v2[0], v2[1]])
+            # each node has a relation list and attribute list
+            relation_list.append(node_rel_list)
+            attribute_list.append(node_attr_list)
         # add TOP as an attribute. The attribute value is the top node value
-        attribute_list[0]["TOP"] = node_value_list[0]
+        attribute_list[0].append(["TOP", node_value_list[0]])
         result_amr = AMR(node_name_list, node_value_list, relation_list, attribute_list)
         return result_amr
 
