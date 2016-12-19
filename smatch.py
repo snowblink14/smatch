@@ -766,8 +766,22 @@ def main(arguments):
             print >> ERROR_LOG, "Error: File 2 has less AMRs than file 1"
             print >> ERROR_LOG, "Ignoring remaining AMRs"
             break
-        amr1 = amr.AMR.parse_AMR_line(cur_amr1)
-        amr2 = amr.AMR.parse_AMR_line(cur_amr2)
+      #  amr1 = amr.AMR.parse_AMR_line(cur_amr1)
+      #  amr2 = amr.AMR.parse_AMR_line(cur_amr2)
+        try:
+            amr1 = amr.AMR.parse_AMR_line(cur_amr1)
+        except Exception as e:
+            print >> ERROR_LOG, "Error in parsing amr 1: %s" % cur_amr1
+            print >> ERROR_LOG, "Please check if the AMR is ill-formatted. Ignoring remaining AMRs"
+            print >> ERROR_LOG, "Error message: %s" % e.message
+            break
+        try:
+            amr2 = amr.AMR.parse_AMR_line(cur_amr2)
+        except Exception as e:
+            print >> ERROR_LOG, "Error in parsing amr 1: %s" % cur_amr1
+            print >> ERROR_LOG, "Please check if the AMR is ill-formatted. Ignoring remaining AMRs"
+            print >> ERROR_LOG, "Error message: %s" % e.message
+            break
         prefix1 = "a"
         prefix2 = "b"
         # Rename node to "a1", "a2", .etc
