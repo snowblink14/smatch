@@ -766,8 +766,6 @@ def main(arguments):
             print >> ERROR_LOG, "Error: File 2 has less AMRs than file 1"
             print >> ERROR_LOG, "Ignoring remaining AMRs"
             break
-      #  amr1 = amr.AMR.parse_AMR_line(cur_amr1)
-      #  amr2 = amr.AMR.parse_AMR_line(cur_amr2)
         try:
             amr1 = amr.AMR.parse_AMR_line(cur_amr1)
         except Exception as e:
