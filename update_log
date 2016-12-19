@@ -74,6 +74,6 @@ Person involved: Shu Cai
 Fix a bug introduced in 11/06/2016: not supporting multiple same-name relationships
 Thanks Miguel Ballesteros (miguel.ballesteros@ibm.com) to bring this up.
 
-Update: 12/14/2016
+Update: 12/18/2016
 Person involved: Shu Cai
 Add an error message for AMR parsing error, and fix a bug introduced by a typo in the previous commit.
