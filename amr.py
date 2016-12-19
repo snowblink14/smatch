@@ -384,7 +384,7 @@ class AMR(object):
                         node_attr_list.append([[v2[0]], v2[1][1:-1]])
                     # if value is a node name
                     elif v2[1] in node_dict:
-                        node_rel_list.append([[v2[0]], v2[1]])
+                        node_rel_list.append([v2[0], v2[1]])
                     else:
                         node_attr_list.append([v2[0], v2[1]])
             # each node has a relation list and attribute list
