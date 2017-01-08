@@ -422,7 +422,7 @@ class AMR(object):
         return result_amr
 
 # test AMR parsing
-# run by
+# run by amr.py [file containing AMR]
 # a unittest can also be used.
 if __name__ == "__main__":
     if len(sys.argv) < 2:
