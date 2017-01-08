@@ -80,5 +80,5 @@ Add an error message for AMR parsing error, and fix a bug introduced by a typo i
 
 Update: 01/08/2017
 Person involved: Shu Cai
-A bit refractoring and cleanup for easier debugging and better code quality.
+A bit refactoring and cleanup for easier debugging and better code quality.
 This change does not affect the functionality of smatch.
