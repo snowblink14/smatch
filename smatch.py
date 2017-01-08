@@ -12,7 +12,6 @@ import amr
 import os
 import random
 import sys
-import time
 
 # total number of iteration in smatch computation
 iteration_num = 5
@@ -40,34 +39,6 @@ DEBUG_LOG = sys.stderr
 # key: tuples of node mapping
 # value: the matching triple count
 match_triple_dict = {}
-
-
-def get_amr_line(input_f):
-    """
-    Read the file containing AMRs. AMRs are separated by a blank line.
-    Each call of get_amr_line() returns the next available AMR (in one-line form).
-    Note: this function does not verify if the AMR is valid
-
-    """
-    cur_amr = []
-    has_content = False
-    for line in input_f:
-        line = line.strip()
-        if line == "":
-            if not has_content:
-                # empty lines before current AMR
-                continue
-            else:
-                # end of current AMR
-                break
-        if line.strip().startswith("#"):
-            # ignore the comment line (starting with "#") in the AMR file
-            continue
-        else:
-            has_content = True
-            cur_amr.append(line.strip())
-    return "".join(cur_amr)
-
 
 def build_arg_parser():
     """
@@ -754,8 +725,8 @@ def main(arguments):
     floatdisplay = "%%.%df" % arguments.significant
     # Read amr pairs from two files
     while True:
-        cur_amr1 = get_amr_line(args.f[0])
-        cur_amr2 = get_amr_line(args.f[1])
+        cur_amr1 = amr.AMR.get_amr_line(args.f[0])
+        cur_amr2 = amr.AMR.get_amr_line(args.f[1])
         if cur_amr1 == "" and cur_amr2 == "":
             break
         if cur_amr1 == "":
