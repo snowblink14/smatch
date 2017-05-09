@@ -147,10 +147,10 @@ def get_best_match(instance1, attribute1, relation1,
                                                      instance2, attribute2, relation2,
                                                      prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
     if veryVerbose:
-        print ("Candidate mappings:", file=DEBUG_LOG)
-        print (candidate_mappings, file=DEBUG_LOG)
-        print ("Weight dictionary", file=DEBUG_LOG)
-        print (weight_dict, file=DEBUG_LOG)
+        print("Candidate mappings:", file=DEBUG_LOG)
+        print(candidate_mappings, file=DEBUG_LOG)
+        print("Weight dictionary", file=DEBUG_LOG)
+        print(weight_dict, file=DEBUG_LOG)
 
     best_match_num = 0
     # initialize best match mapping
@@ -158,7 +158,7 @@ def get_best_match(instance1, attribute1, relation1,
     best_mapping = [-1] * len(instance1)
     for i in range(0, iteration_num):
         if veryVerbose:
-            print ("Iteration", i, file=DEBUG_LOG)
+            print("Iteration", i, file=DEBUG_LOG)
         if i == 0:
             # smart initialization used for the first round
             cur_mapping = smart_init_mapping(candidate_mappings, instance1, instance2)
@@ -168,14 +168,14 @@ def get_best_match(instance1, attribute1, relation1,
         # compute current triple match number
         match_num = compute_match(cur_mapping, weight_dict)
         if veryVerbose:
-            print ("Node mapping at start", cur_mapping, file=DEBUG_LOG)
-            print ("Triple match number at start:", match_num, file=DEBUG_LOG)
+            print("Node mapping at start", cur_mapping, file=DEBUG_LOG)
+            print("Triple match number at start:", match_num, file=DEBUG_LOG)
         while True:
             # get best gain
             (gain, new_mapping) = get_best_gain(cur_mapping, candidate_mappings, weight_dict,
                                                 len(instance2), match_num)
             if veryVerbose:
-                print ("Gain after the hill-climbing", gain, file=DEBUG_LOG)
+                print("Gain after the hill-climbing", gain, file=DEBUG_LOG)
             # hill-climbing until there will be no gain for new node mapping
             if gain <= 0:
                 break
@@ -183,8 +183,8 @@ def get_best_match(instance1, attribute1, relation1,
             match_num += gain
             cur_mapping = new_mapping[:]
             if veryVerbose:
-                print ("Update triple match number to:", match_num, file=DEBUG_LOG)
-                print ("Current mapping:", cur_mapping, file=DEBUG_LOG)
+                print("Update triple match number to:", match_num, file=DEBUG_LOG)
+                print("Current mapping:", cur_mapping, file=DEBUG_LOG)
         if match_num > best_match_num:
             best_mapping = cur_mapping[:]
             best_match_num = match_num
@@ -607,8 +607,8 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
                     new_mapping[i] = nm
                     new_match_num = compute_match(new_mapping, weight_dict)
                     if new_match_num != cur_match_num + mv_gain:
-                       print(mapping, new_mapping, file=DEBUG_LOG)
-                       print("Inconsistency in computing: move gain", cur_match_num, mv_gain, new_match_num, file=DEBUG_LOG)
+                        print(mapping, new_mapping, file=ERROR_LOG)
+                        print("Inconsistency in computing: move gain", cur_match_num, mv_gain, new_match_num, file=ERROR_LOG)
                 if mv_gain > largest_gain:
                     largest_gain = mv_gain
                     node1 = i
@@ -627,7 +627,7 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
                 print("After swapping:", i, "-", m2, ",", j, "-", m, file=DEBUG_LOG)
             sw_gain = swap_gain(mapping, i, m, j, m2, weight_dict, cur_match_num)
             if veryVerbose:
-                print ("Swap gain:", sw_gain, file=DEBUG_LOG)
+                print("Swap gain:", sw_gain, file=DEBUG_LOG)
                 new_mapping = mapping[:]
                 new_mapping[i] = m2
                 new_mapping[j] = m
@@ -833,7 +833,7 @@ def main(arguments):
             (precision, recall, best_f_score) = compute_f(best_match_num,
                                                           test_triple_num,
                                                           gold_triple_num)
-            print("Sentence", sent_num)
+            #print("Sentence", sent_num)
             if pr_flag:
                 print("Precision: " + floatdisplay % precision)
                 print("Recall: " + floatdisplay % recall)
