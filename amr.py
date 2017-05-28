@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #  -*- coding: utf-8 -*-
 
-
 """
 AMR (Abstract Meaning Representation) structure
 For detailed description of AMR, see http://www.isi.edu/natural-language/amr/a.pdf
@@ -147,10 +146,10 @@ class AMR(object):
             lines.append("Node "+ str(i) + " " + self.nodes[i])
             lines.append("Value: " + self.node_values[i])
             lines.append("Relations:")
-            for k, v in self.relations[i].items():
-                lines.append("Node " + v + " via " + k)
-            for k2, v2 in self.attributes[i].items():
-                lines.append("Attribute: " + k2 + " value " + v2)
+            for relation in self.relations[i]:
+                lines.append("Node " + relation[1] + " via " + relation[0])
+            for attribute in self.attributes[i]:
+                lines.append("Attribute: " + attribute[0] + " value " + attribute[1])
         return "\n".join(lines)
 
     def __repr__(self):
@@ -163,6 +162,32 @@ class AMR(object):
         """
         print(self.__str__(), file=DEBUG_LOG)
 
+    @staticmethod
+    def get_amr_line(input_f):
+        """
+        Read the file containing AMRs. AMRs are separated by a blank line.
+        Each call of get_amr_line() returns the next available AMR (in one-line form).
+        Note: this function does not verify if the AMR is valid
+
+        """
+        cur_amr = []
+        has_content = False
+        for line in input_f:
+            line = line.strip()
+            if line == "":
+                if not has_content:
+                    # empty lines before current AMR
+                    continue
+                else:
+                    # end of current AMR
+                    break
+            if line.strip().startswith("#"):
+                # ignore the comment line (starting with "#") in the AMR file
+                continue
+            else:
+                has_content = True
+                cur_amr.append(line.strip())
+        return "".join(cur_amr)
 
     @staticmethod
     def parse_AMR_line(line):
@@ -398,6 +423,7 @@ class AMR(object):
         return result_amr
 
 # test AMR parsing
+# run by amr.py [file containing AMR]
 # a unittest can also be used.
 if __name__ == "__main__":
     if len(sys.argv) < 2:

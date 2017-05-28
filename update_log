@@ -77,3 +77,8 @@ Thanks Miguel Ballesteros (miguel.ballesteros@ibm.com) to bring this up.
 Update: 12/18/2016
 Person involved: Shu Cai
 Add an error message for AMR parsing error, and fix a bug introduced by a typo in the previous commit.
+
+Update: 01/08/2017
+Person involved: Shu Cai
+A bit refactoring and cleanup for easier debugging and better code quality.
+This change does not affect the functionality of smatch.
