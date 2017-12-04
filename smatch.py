@@ -8,6 +8,9 @@ For detailed description of smatch, see http://www.isi.edu/natural-language/amr/
 
 """
 
+from __future__ import print_function
+from __future__ import division
+
 import amr
 import os
 import random
@@ -116,17 +119,18 @@ def get_best_match(instance1, attribute1, relation1,
                                                      instance2, attribute2, relation2,
                                                      prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
     if veryVerbose:
-        print >> DEBUG_LOG, "Candidate mappings:"
-        print >> DEBUG_LOG, candidate_mappings
-        print >> DEBUG_LOG, "Weight dictionary"
-        print >> DEBUG_LOG, weight_dict
+        print("Candidate mappings:", file=DEBUG_LOG)
+        print(candidate_mappings, file=DEBUG_LOG)
+        print("Weight dictionary", file=DEBUG_LOG)
+        print(weight_dict, file=DEBUG_LOG)
+
     best_match_num = 0
     # initialize best match mapping
     # the ith entry is the node index in AMR 2 which maps to the ith node in AMR 1
     best_mapping = [-1] * len(instance1)
     for i in range(0, iteration_num):
         if veryVerbose:
-            print >> DEBUG_LOG, "Iteration", i
+            print("Iteration", i, file=DEBUG_LOG)
         if i == 0:
             # smart initialization used for the first round
             cur_mapping = smart_init_mapping(candidate_mappings, instance1, instance2)
@@ -136,14 +140,14 @@ def get_best_match(instance1, attribute1, relation1,
         # compute current triple match number
         match_num = compute_match(cur_mapping, weight_dict)
         if veryVerbose:
-            print >> DEBUG_LOG, "Node mapping at start", cur_mapping
-            print >> DEBUG_LOG, "Triple match number at start:", match_num
+            print("Node mapping at start", cur_mapping, file=DEBUG_LOG)
+            print("Triple match number at start:", match_num, file=DEBUG_LOG)
         while True:
             # get best gain
             (gain, new_mapping) = get_best_gain(cur_mapping, candidate_mappings, weight_dict,
                                                 len(instance2), match_num)
             if veryVerbose:
-                print >> DEBUG_LOG, "Gain after the hill-climbing", gain
+                print("Gain after the hill-climbing", gain, file=DEBUG_LOG)
             # hill-climbing until there will be no gain for new node mapping
             if gain <= 0:
                 break
@@ -151,12 +155,13 @@ def get_best_match(instance1, attribute1, relation1,
             match_num += gain
             cur_mapping = new_mapping[:]
             if veryVerbose:
-                print >> DEBUG_LOG, "Update triple match number to:", match_num
-                print >> DEBUG_LOG, "Current mapping:", cur_mapping
+                print("Update triple match number to:", match_num, file=DEBUG_LOG)
+                print("Current mapping:", cur_mapping, file=DEBUG_LOG)
         if match_num > best_match_num:
             best_mapping = cur_mapping[:]
             best_match_num = match_num
     return best_mapping, best_match_num
+
 
 def normalize(item):
     """
@@ -164,6 +169,7 @@ def normalize(item):
     """
     item = item.lower().rstrip('_')
     return item
+
 
 def compute_pool(instance1, attribute1, relation1,
                  instance2, attribute2, relation2,
@@ -378,11 +384,11 @@ def compute_match(mapping, weight_dict):
     """
     # If this mapping has been investigated before, retrieve the value instead of re-computing.
     if veryVerbose:
-        print >> DEBUG_LOG, "Computing match for mapping"
-        print >> DEBUG_LOG, mapping
+       print("Computing match for mapping", file=DEBUG_LOG)
+       print(mapping, file=DEBUG_LOG)
     if tuple(mapping) in match_triple_dict:
         if veryVerbose:
-            print >> DEBUG_LOG, "saved value", match_triple_dict[tuple(mapping)]
+            print("saved value", match_triple_dict[tuple(mapping)], file=DEBUG_LOG)
         return match_triple_dict[tuple(mapping)]
     match_num = 0
     # i is node index in AMR 1, m is node index in AMR 2
@@ -395,13 +401,13 @@ def compute_match(mapping, weight_dict):
         if current_node_pair not in weight_dict:
             continue
         if veryVerbose:
-            print >> DEBUG_LOG, "node_pair", current_node_pair
+            print("node_pair", current_node_pair, file=DEBUG_LOG)
         for key in weight_dict[current_node_pair]:
             if key == -1:
                 # matching triple resulting from instance/attribute triples
                 match_num += weight_dict[current_node_pair][key]
                 if veryVerbose:
-                    print >> DEBUG_LOG, "instance/attribute match", weight_dict[current_node_pair][key]
+                    print("instance/attribute match", weight_dict[current_node_pair][key], file=DEBUG_LOG)
             # only consider node index larger than i to avoid duplicates
             # as we store both weight_dict[node_pair1][node_pair2] and
             #     weight_dict[node_pair2][node_pair1] for a relation
@@ -410,9 +416,9 @@ def compute_match(mapping, weight_dict):
             elif mapping[key[0]] == key[1]:
                 match_num += weight_dict[current_node_pair][key]
                 if veryVerbose:
-                    print >> DEBUG_LOG, "relation match with", key, weight_dict[current_node_pair][key]
+                    print("relation match with", key, weight_dict[current_node_pair][key], file=DEBUG_LOG)
     if veryVerbose:
-        print >> DEBUG_LOG, "match computing complete, result:", match_num
+        print("match computing complete, result:", match_num, file=DEBUG_LOG)
     # update match_triple_dict
     match_triple_dict[tuple(mapping)] = match_num
     return match_num  
@@ -565,17 +571,16 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
                 # remap i to another unmatched node (move)
                 # (i, m) -> (i, nm)
                 if veryVerbose:
-                    print >> DEBUG_LOG, "Remap node", i, "from ", nid, "to", nm
+                   print("Remap node", i, "from ", nid, "to", nm, file=DEBUG_LOG)
                 mv_gain = move_gain(mapping, i, nid, nm, weight_dict, cur_match_num)
                 if veryVerbose:
-                    print >> DEBUG_LOG, "Move gain:", mv_gain
+                    print("Move gain:", mv_gain, file=DEBUG_LOG)
                     new_mapping = mapping[:]
                     new_mapping[i] = nm
                     new_match_num = compute_match(new_mapping, weight_dict)
                     if new_match_num != cur_match_num + mv_gain:
-                        print >> ERROR_LOG, mapping, new_mapping
-                        print >> ERROR_LOG, "Inconsistency in computing: move gain", cur_match_num, mv_gain, \
-                            new_match_num
+                        print(mapping, new_mapping, file=ERROR_LOG)
+                        print("Inconsistency in computing: move gain", cur_match_num, mv_gain, new_match_num, file=ERROR_LOG)
                 if mv_gain > largest_gain:
                     largest_gain = mv_gain
                     node1 = i
@@ -588,21 +593,21 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
             # swap operation (i, m) (j, m2) -> (i, m2) (j, m)
             # j starts from i+1, to avoid duplicate swap
             if veryVerbose:
-                print >> DEBUG_LOG, "Swap node", i, "and", j
-                print >> DEBUG_LOG, "Before swapping:", i, "-", m, ",", j, "-", m2
-                print >> DEBUG_LOG, mapping
-                print >> DEBUG_LOG, "After swapping:", i, "-", m2, ",", j, "-", m
+                print("Swap node", i, "and", j, file=DEBUG_LOG)
+                print("Before swapping:", i, "-", m, ",", j, "-", m2, file=DEBUG_LOG)
+                print(mapping, file=DEBUG_LOG)
+                print("After swapping:", i, "-", m2, ",", j, "-", m, file=DEBUG_LOG)
             sw_gain = swap_gain(mapping, i, m, j, m2, weight_dict, cur_match_num)
             if veryVerbose:
-                print >> DEBUG_LOG, "Swap gain:", sw_gain
+                print("Swap gain:", sw_gain, file=DEBUG_LOG)
                 new_mapping = mapping[:]
                 new_mapping[i] = m2
                 new_mapping[j] = m
-                print >> DEBUG_LOG, new_mapping
+                print(new_mapping, file=DEBUG_LOG)
                 new_match_num = compute_match(new_mapping, weight_dict)
                 if new_match_num != cur_match_num + sw_gain:
-                    print >> ERROR_LOG, match, new_match
-                    print >> ERROR_LOG, "Inconsistency in computing: swap gain", cur_match_num, sw_gain, new_match_num
+                    print(match, new_match, file=ERROR_LOG)
+                    print("Inconsistency in computing: swap gain", cur_match_num, sw_gain, new_match_num, file=ERROR_LOG)
             if sw_gain > largest_gain:
                 largest_gain = sw_gain
                 node1 = i
@@ -613,20 +618,20 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
     if node1 is not None:
         if use_swap:
             if veryVerbose:
-                print >> DEBUG_LOG, "Use swap gain"
+                print("Use swap gain", file=DEBUG_LOG)
             temp = cur_mapping[node1]
             cur_mapping[node1] = cur_mapping[node2]
             cur_mapping[node2] = temp
         else:
             if veryVerbose:
-                print >> DEBUG_LOG, "Use move gain"
+                print("Use move gain", file=DEBUG_LOG)
             cur_mapping[node1] = node2
     else:
         if veryVerbose:
-            print >> DEBUG_LOG, "no move/swap gain found"
+            print("no move/swap gain found", file=DEBUG_LOG)
     if veryVerbose:
-        print >> DEBUG_LOG, "Original mapping", mapping
-        print >> DEBUG_LOG, "Current mapping", cur_mapping
+        print("Original mapping", mapping, file=DEBUG_LOG)
+        print("Current mapping", cur_mapping, file=DEBUG_LOG)
     return largest_gain, cur_mapping
 
 
@@ -670,11 +675,11 @@ def compute_f(match_num, test_num, gold_num):
     if (precision + recall) != 0:
         f_score = 2 * precision * recall / (precision + recall)
         if veryVerbose:
-            print >> DEBUG_LOG, "F-score:", f_score
+            print("F-score:", f_score, file=DEBUG_LOG)
         return precision, recall, f_score
     else:
         if veryVerbose:
-            print >> DEBUG_LOG, "F-score:", "0.0"
+            print("F-score:", "0.0", file=DEBUG_LOG)
         return precision, recall, 0.00
 
 
@@ -730,26 +735,26 @@ def main(arguments):
         if cur_amr1 == "" and cur_amr2 == "":
             break
         if cur_amr1 == "":
-            print >> ERROR_LOG, "Error: File 1 has less AMRs than file 2"
-            print >> ERROR_LOG, "Ignoring remaining AMRs"
+            print("Error: File 1 has less AMRs than file 2", file=ERROR_LOG)
+            print("Ignoring remaining AMRs", file=ERROR_LOG)
             break
         if cur_amr2 == "":
-            print >> ERROR_LOG, "Error: File 2 has less AMRs than file 1"
-            print >> ERROR_LOG, "Ignoring remaining AMRs"
+            print("Error: File 2 has less AMRs than file 1", file=ERROR_LOG)
+            print("Ignoring remaining AMRs", file=ERROR_LOG)
             break
         try:
             amr1 = amr.AMR.parse_AMR_line(cur_amr1)
         except Exception as e:
-            print >> ERROR_LOG, "Error in parsing amr 1: %s" % cur_amr1
-            print >> ERROR_LOG, "Please check if the AMR is ill-formatted. Ignoring remaining AMRs"
-            print >> ERROR_LOG, "Error message: %s" % e.message
+            print("Error in parsing amr 1: %s" % cur_amr1, file=ERROR_LOG)
+            print("Please check if the AMR is ill-formatted. Ignoring remaining AMRs", file=ERROR_LOG)
+            print("Error message: %s" % e.message, file=ERROR_LOG)
             break
         try:
             amr2 = amr.AMR.parse_AMR_line(cur_amr2)
         except Exception as e:
-            print >> ERROR_LOG, "Error in parsing amr 2: %s" % cur_amr2
-            print >> ERROR_LOG, "Please check if the AMR is ill-formatted. Ignoring remaining AMRs"
-            print >> ERROR_LOG, "Error message: %s" % e.message
+            print("Error in parsing amr 2: %s" % cur_amr2, file=ERROR_LOG)
+            print("Please check if the AMR is ill-formatted. Ignoring remaining AMRs", file=ERROR_LOG)
+            print("Error message: %s" % e.message, file=ERROR_LOG)
             break
         prefix1 = "a"
         prefix2 = "b"
@@ -760,30 +765,29 @@ def main(arguments):
         (instance1, attributes1, relation1) = amr1.get_triples()
         (instance2, attributes2, relation2) = amr2.get_triples()
         if verbose:
-            # print parse results of two AMRs
-            print >> DEBUG_LOG, "AMR pair", sent_num
-            print >> DEBUG_LOG, "============================================"
-            print >> DEBUG_LOG, "AMR 1 (one-line):", cur_amr1
-            print >> DEBUG_LOG, "AMR 2 (one-line):", cur_amr2
-            print >> DEBUG_LOG, "Instance triples of AMR 1:", len(instance1)
-            print >> DEBUG_LOG, instance1
-            print >> DEBUG_LOG, "Attribute triples of AMR 1:", len(attributes1)
-            print >> DEBUG_LOG, attributes1
-            print >> DEBUG_LOG, "Relation triples of AMR 1:", len(relation1)
-            print >> DEBUG_LOG, relation1
-            print >> DEBUG_LOG, "Instance triples of AMR 2:", len(instance2)
-            print >> DEBUG_LOG, instance2
-            print >> DEBUG_LOG, "Attribute triples of AMR 2:", len(attributes2)
-            print >> DEBUG_LOG, attributes2
-            print >> DEBUG_LOG, "Relation triples of AMR 2:", len(relation2)
-            print >> DEBUG_LOG, relation2
+            print("AMR pair", sent_num, file=DEBUG_LOG)
+            print("============================================", file=DEBUG_LOG)
+            print("AMR 1 (one-line):", cur_amr1, file=DEBUG_LOG)
+            print("AMR 2 (one-line):", cur_amr2, file=DEBUG_LOG)
+            print("Instance triples of AMR 1:", len(instance1), file=DEBUG_LOG)
+            print(instance1, file=DEBUG_LOG)
+            print("Attribute triples of AMR 1:", len(attributes1), file=DEBUG_LOG)
+            print(attributes1, file=DEBUG_LOG)
+            print("Relation triples of AMR 1:", len(relation1), file=DEBUG_LOG)
+            print(relation1, file=DEBUG_LOG)
+            print("Instance triples of AMR 2:", len(instance2), file=DEBUG_LOG)
+            print(instance2, file=DEBUG_LOG)
+            print("Attribute triples of AMR 2:", len(attributes2), file=DEBUG_LOG)
+            print(attributes2, file=DEBUG_LOG)
+            print("Relation triples of AMR 2:", len(relation2), file=DEBUG_LOG)
+            print(relation2, file=DEBUG_LOG)
         (best_mapping, best_match_num) = get_best_match(instance1, attributes1, relation1,
                                                         instance2, attributes2, relation2,
                                                         prefix1, prefix2, doinstance=doinstance, doattribute=doattribute, dorelation=dorelation)
         if verbose:
-            print >> DEBUG_LOG, "best match number", best_match_num
-            print >> DEBUG_LOG, "best node mapping", best_mapping
-            print >> DEBUG_LOG, "Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2)
+            print("best match number", best_match_num, file=DEBUG_LOG)
+            print("best node mapping", best_mapping, file=DEBUG_LOG)
+            print("Best node mapping alignment:", print_alignment(best_mapping, instance1, instance2), file=DEBUG_LOG)
         if arguments.justinstance:
             test_triple_num = len(instance1)
             gold_triple_num = len(instance2)
@@ -801,11 +805,11 @@ def main(arguments):
             (precision, recall, best_f_score) = compute_f(best_match_num,
                                                           test_triple_num,
                                                           gold_triple_num)
-            #print "Sentence", sent_num
+            #print("Sentence", sent_num)
             if pr_flag:
-                print "Precision: "+floatdisplay % precision
-                print "Recall: "+floatdisplay % recall
-            print "F-score: "+floatdisplay % best_f_score
+                print("Precision: " + floatdisplay % precision)
+                print("Recall: " + floatdisplay % recall)
+            print("F-score: " + floatdisplay % best_f_score)
         total_match_num += best_match_num
         total_test_num += test_triple_num
         total_gold_num += gold_triple_num
@@ -813,47 +817,41 @@ def main(arguments):
         match_triple_dict.clear()
         sent_num += 1
     if verbose:
-        print >> DEBUG_LOG, "Total match number, total triple number in AMR 1, and total triple number in AMR 2:"
-        print >> DEBUG_LOG, total_match_num, total_test_num, total_gold_num
-        print >> DEBUG_LOG, "---------------------------------------------------------------------------------"
+        print("Total match number, total triple number in AMR 1, and total triple number in AMR 2:", file=DEBUG_LOG)
+        print(total_match_num, total_test_num, total_gold_num, file=DEBUG_LOG)
+        print("---------------------------------------------------------------------------------", file=DEBUG_LOG)
     # output document-level smatch score (a single f-score for all AMR pairs in two files)
     if single_score:
         (precision, recall, best_f_score) = compute_f(total_match_num, total_test_num, total_gold_num)
         if pr_flag:
-            print "Precision: "+floatdisplay % precision
-            print "Recall: "+floatdisplay % recall
-        print "F-score: "+floatdisplay % best_f_score
+            print("Precision: " + floatdisplay % precision)
+            print("Recall: " + floatdisplay % recall)
+        print("F-score: " + floatdisplay % best_f_score)
     args.f[0].close()
     args.f[1].close()
 
 if __name__ == "__main__":
     parser = None
     args = None
-    # only support python version 2.5 or later
-    if sys.version_info[0] != 2 or sys.version_info[1] < 5:
-        print >> ERROR_LOG, "This script only supports python 2.5 or later.  \
-                            It does not support python 3.x."
-        exit(1)
     # use optparse if python version is 2.5 or 2.6
-    if sys.version_info[1] < 7:
+    if sys.version_info[0] == 2 and sys.version_info[1] < 7:
         import optparse
         if len(sys.argv) == 1:
-            print >> ERROR_LOG, "No argument given. Please run smatch.py -h \
-            to see the argument description."
+            print("No argument given. Please run smatch.py -h to see the argument description.", file=ERROR_LOG)
             exit(1)
         parser = build_arg_parser2()
         (args, opts) = parser.parse_args()
         file_handle = []
         if args.f is None:
-            print >> ERROR_LOG, "smatch.py requires -f option to indicate two files \
-                                 containing AMR as input. Please run smatch.py -h to  \
-                                 see the argument description."
+            print("smatch.py requires -f option to indicate two files \
+                                             containing AMR as input. Please run smatch.py -h to  \
+                                             see the argument description.", file=ERROR_LOG)
             exit(1)
         # assert there are 2 file names following -f.
         assert(len(args.f) == 2)
         for file_path in args.f:
             if not os.path.exists(file_path):
-                print >> ERROR_LOG, "Given file", args.f[0], "does not exist"
+                print("Given file", args.f[0], "does not exist", file=ERROR_LOG)
                 exit(1)
             file_handle.append(open(file_path))
         # use opened files

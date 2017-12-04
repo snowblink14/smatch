@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import amr
 import sys
-import subprocess
 import smatch
 import os
-import random
 import time
 
 ERROR_LOG = sys.stderr
@@ -50,7 +50,7 @@ def get_names(file_dir, files):
         if has_file:
             name_list.append(user)
     if len(name_list) == 0:
-        print >> ERROR_LOG, "********Error: Cannot find any user who completes the files*************"
+        print("********Error: Cannot find any user who completes the files*************", file=ERROR_LOG)
     return name_list
 
 
@@ -75,24 +75,24 @@ def compute_files(user1, user2, file_list, dir_pre, start_num):
         file1 = dir_pre + user1 + "/" + fi + ".txt"
         file2 = dir_pre + user2 + "/" + fi + ".txt"
         if not os.path.exists(file1):
-            print >> ERROR_LOG, "*********Error: ", file1, "does not exist*********"
+            print("*********Error: ", file1, "does not exist*********", file=ERROR_LOG)
             return -1.00
         if not os.path.exists(file2):
-            print >> ERROR_LOG, "*********Error: ", file2, "does not exist*********"
+            print("*********Error: ", file2, "does not exist*********", file=ERROR_LOG)
             return -1.00
         try:
             file1_h = open(file1, "r")
             file2_h = open(file2, "r")
         except IOError:
-            print >> ERROR_LOG, "Cannot open the files", file1, file2
+            print("Cannot open the files", file1, file2, file=ERROR_LOG)
             break
         cur_amr1 = smatch.get_amr_line(file1_h)
         cur_amr2 = smatch.get_amr_line(file2_h)
         if cur_amr1 == "":
-            print >> ERROR_LOG, "AMR 1 is empty"
+            print("AMR 1 is empty", file=ERROR_LOG)
             continue
         if cur_amr2 == "":
-            print >> ERROR_LOG, "AMR 2 is empty"
+            print("AMR 2 is empty", file=ERROR_LOG)
             continue
         amr1 = amr.AMR.parse_AMR_line(cur_amr1)
         amr2 = amr.AMR.parse_AMR_line(cur_amr2)
@@ -103,24 +103,24 @@ def compute_files(user1, user2, file_list, dir_pre, start_num):
         (test_inst, test_rel1, test_rel2) = amr1.get_triples()
         (gold_inst, gold_rel1, gold_rel2) = amr2.get_triples()
         if verbose:
-            print >> DEBUG_LOG, "Instance triples of file 1:", len(test_inst)
-            print >> DEBUG_LOG, test_inst
-            print >> DEBUG_LOG, "Attribute triples of file 1:", len(test_rel1)
-            print >> DEBUG_LOG, test_rel1
-            print >> DEBUG_LOG, "Relation triples of file 1:", len(test_rel2)
-            print >> DEBUG_LOG, test_rel2
-            print >> DEBUG_LOG, "Instance triples of file 2:", len(gold_inst)
-            print >> DEBUG_LOG, gold_inst
-            print >> DEBUG_LOG, "Attribute triples of file 2:", len(gold_rel1)
-            print >> DEBUG_LOG, gold_rel1
-            print >> DEBUG_LOG, "Relation triples of file 2:", len(gold_rel2)
-            print >> DEBUG_LOG, gold_rel2
+            print("Instance triples of file 1:", len(test_inst), file=DEBUG_LOG)
+            print(test_inst, file=DEBUG_LOG)
+            print("Attribute triples of file 1:", len(test_rel1), file=DEBUG_LOG)
+            print(test_rel1, file=DEBUG_LOG)
+            print("Relation triples of file 1:", len(test_rel2), file=DEBUG_LOG)
+            print(test_rel2, file=DEBUG_LOG)
+            print("Instance triples of file 2:", len(gold_inst), file=DEBUG_LOG)
+            print(gold_inst, file=DEBUG_LOG)
+            print("Attribute triples of file 2:", len(gold_rel1), file=DEBUG_LOG)
+            print(gold_rel1, file=DEBUG_LOG)
+            print("Relation triples of file 2:", len(gold_rel2), file=DEBUG_LOG)
+            print(gold_rel2, file=DEBUG_LOG)
         (best_match, best_match_num) = smatch.get_best_match(test_inst, test_rel1, test_rel2,
                                                              gold_inst, gold_rel1, gold_rel2,
                                                              test_label, gold_label)
         if verbose:
-            print >> DEBUG_LOG, "best match number", best_match_num
-            print >> DEBUG_LOG, "Best Match:", smatch.print_alignment(best_match, test_inst, gold_inst)
+            print("best match number", best_match_num, file=DEBUG_LOG)
+            print("Best Match:", smatch.print_alignment(best_match, test_inst, gold_inst), file=DEBUG_LOG)
         match_total += best_match_num
         test_total += (len(test_inst) + len(test_rel1) + len(test_rel2))
         gold_total += (len(gold_inst) + len(gold_rel1) + len(gold_rel2))
@@ -142,11 +142,12 @@ def pprint_table(table):
     for i in range(len(table[0])):
         col_paddings.append(get_max_width(table,i))
     for row in table:
-        print row[0].ljust(col_paddings[0] + 1),
+        print(row[0].ljust(col_paddings[0] + 1), end="")
         for i in range(1, len(row)):
             col = str(row[i]).rjust(col_paddings[i]+2)
-            print col,
-        print "\n"
+            print(col, end='')
+        print("\n")
+
 
 def build_arg_parser():
     """
@@ -161,6 +162,7 @@ def build_arg_parser():
     parser.add_argument('-r', type=int, default=4, help='Restart number (Default:4)')
     parser.add_argument('-v', action='store_true', help='Verbose output (Default:False)')
     return parser
+
 
 def build_arg_parser2():
     """
@@ -202,14 +204,14 @@ def check_args(args):
 
     """
     if not os.path.exists(args.fd):
-        print >> ERROR_LOG, "Not a valid path", args.fd
+        print("Not a valid path", args.fd, file=ERROR_LOG)
         return [], [], False
     if args.fl is not None:
         # we already ensure the file can be opened and opened the file
         file_line = args.fl.readline()
         amr_ids = file_line.strip().split()
     elif args.f is None:
-        print >> ERROR_LOG, "No AMR ID was given"
+        print("No AMR ID was given", file=ERROR_LOG)
         return [], [], False
     else:
         amr_ids = args.f
@@ -220,15 +222,15 @@ def check_args(args):
         # no need to check names
         check_name = False
         if len(names) == 0:
-            print >> ERROR_LOG, "Cannot find any user who tagged these AMR"
+            print("Cannot find any user who tagged these AMR", file=ERROR_LOG)
             return [], [], False
         else:
             names = args.p
     if len(names) == 0:
-        print >> ERROR_LOG, "No user was given"
+        print("No user was given", file=ERROR_LOG)
         return [], [], False
     if len(names) == 1:
-        print >> ERROR_LOG, "Only one user is given. Smatch calculation requires at least two users."
+        print("Only one user is given. Smatch calculation requires at least two users.", file=ERROR_LOG)
         return [], [], False
     if "consensus" in names:
         con_index = names.index("consensus")
@@ -241,17 +243,17 @@ def check_args(args):
             for amr in amr_ids:
                 amr_path = args.fd + name + "/" + amr + ".txt"
                 if not os.path.exists(amr_path):
-                    print >> ERROR_LOG, "User", name, "fails to tag AMR", amr
+                    print("User", name, "fails to tag AMR", amr, file=ERROR_LOG)
                     pop_name.append(i)
                     break
         if len(pop_name) != 0:
             pop_num = 0
             for p in pop_name:
-                print >> ERROR_LOG, "Deleting user", names[p - pop_num], "from the name list"
+                print("Deleting user", names[p - pop_num], "from the name list", file=ERROR_LOG)
                 names.pop(p - pop_num)
                 pop_num += 1
         if len(names) < 2:
-            print >> ERROR_LOG, "Not enough users to evaluate. Smatch requires >2 users who tag all the AMRs"
+            print("Not enough users to evaluate. Smatch requires >2 users who tag all the AMRs", file=ERROR_LOG)
             return "", "", False
     return amr_ids, names, True
 
@@ -302,7 +304,7 @@ if __name__ == "__main__":
     if sys.version_info[:2] != (2, 7):
         # requires python version >= 2.5
         if sys.version_info[0] != 2 or sys.version_info[1] < 5:
-            print >> ERROR_LOG, "This program requires python 2.5 or later to run. "
+            print("This program requires python 2.5 or later to run. ", file=ERROR_LOG)
             exit(1)
         import optparse
         parser = build_arg_parser2()
@@ -313,7 +315,7 @@ if __name__ == "__main__":
                 file_handle = open(args.fl, "r")
                 args.fl = file_handle
             except IOError:
-                print >> ERROR_LOG, "The ID list file", args.fl, "does not exist"
+                print("The ID list file", args.fl, "does not exist", file=ERROR_LOG)
                 args.fl = None
     # python version 2.7
     else:
@@ -329,7 +331,7 @@ if __name__ == "__main__":
     # time of the whole running process
     whole_time = whole_end - whole_start
     # print if needed
-    # print >> ERROR_LOG, "Accumulated computation time", acc_time
-    # print >> ERROR_LOG, "Total time", whole_time
-    # print >> ERROR_LOG, "Percentage", float(acc_time)/float(whole_time)
+    # print("Accumulated computation time", acc_time, file=ERROR_LOG)
+    # print("Total time", whole_time, file=ERROR_LOG)
+    # print("Percentage", float(acc_time)/float(whole_time), file=ERROR_LOG)
 
