@@ -204,15 +204,15 @@ class AMR(object):
         # Last significant symbol is ) --- current node processing is complete
         # Note that if these symbols are inside parenthesis, they are not significant symbols.
         
-        exceptions =set(["prep-on-behalf-of", "prep-out-of", "consist-of", "subset-of"])
+        exceptions =set(["prep-on-behalf-of", "prep-out-of", "consist-of"])
         def update_triple(node_relation_dict, (u, r, v)):
             # we detect a relation (r) between u and v, with direction u to v.
             # in most cases, if relation name ends with "-of", e.g."arg0-of",
             # it is reverse of some relation. For example, if a is "arg0-of" b,
             # we can also say b is "arg0" a.
             # If the relation name ends with "-of", we store the reverse relation.
-            # but note some relations like "prep-on-behalf-of" and "prep-out-of"
-            # also note realtion "mod" is the reverse of "domain"
+            # but note some exceptions like "prep-on-behalf-of" and "prep-out-of"
+            # also note relation "mod" is the reverse of "domain"
             if r.endswith("-of") and not r in exceptions:
                 node_relation_dict[v].append((r[:-3], u))
             elif r=="mod":
