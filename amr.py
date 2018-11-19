@@ -338,7 +338,7 @@ class AMR(object):
                     # node name is n
                     # we have a relation arg1(upper level node, n)
                     if cur_relation_name != "":
-                        update_triple( node_relation_dict1, (stack[-2], cur_relation_name, node_name))
+                        update_triple(node_relation_dict1, (stack[-2], cur_relation_name, node_name))
                         cur_relation_name = ""
                 else:
                     # error if in other state
