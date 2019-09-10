@@ -877,7 +877,7 @@ if __name__ == "__main__":
             if not os.path.exists(file_path):
                 print("Given file", args.f[0], "does not exist", file=ERROR_LOG)
                 exit(1)
-            file_handle.append(open(file_path, encoding='utf8))
+            file_handle.append(open(file_path, encoding='utf8'))
         # use opened files
         args.f = tuple(file_handle)
     #  use argparse if python version is 2.7 or later
