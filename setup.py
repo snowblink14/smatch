@@ -14,7 +14,7 @@ with open(os.path.join(here, "README.md")) as f:
 
 
 setup(name="smatch",
-      version="1.0",
+      version=os.environ.get("TRAVIS_TAG") or "1.0",
       description="Smatch (semantic match) tool",
       long_description=README,
       author="Shu Cai",
