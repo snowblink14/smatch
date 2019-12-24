@@ -1,9 +1,15 @@
 language: python
 python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-  - "3.7"
+- '2.7'
+- '3.5'
+- '3.6'
+- '3.7'
 install: pip install tox-travis
 script: tox
-
+deploy:
+  provider: pypi
+  user: "__token__"
+  password:
+    secure: HJ4DX+ktvI0hT5l2zowKcc0gheZ+fTYcZxWeNWFpUNWvk0uFOFfD/wMcVo87GXlD1/EUarl6p5/39Tv+bki/sCiCHhZDFcbZi9KfCbxgPfMZ+QfgX84LcwR8N0PJqIGU1bPorJmOV9Zn6fkMkbjx+27IS61Vn5CznkNx8g78Fty2jajA9JMdj9ODU7OD9m/cEpAB//4UoeKp/rWLQxiDrIbPqrSxctXhY2VQcmXuZV96MyyIm1DIysMg3dRBpL83T4/6sAHuqM/tzx75EyrmqKVCOEPE+k2o2nz0d70qL9O9BBaG4i8MBuwK3Et5qK0QU9ekSHX2llOpVnHU2Od39UDH58IaRwnHtc2dkzIT4Ydv22YfgoVht0EhNIjDEeRC1cJQF3iu3ADkiShuWMJBNXt1SAy8JnEkHtB35o3nwcmjjY2wA4sskagb0VHHL8vp7HhdgNirceqh8hqIagWD8FaueyZOZa4Egvzd2nn5TIP9la/r1QrN2GInTvJrxHPNtS7EopS32gp7VSVU+yN9wll7DUM8KkcjvN2nxnY0X3CxuVMvmoUC7/m5OyOPzWB6ECXhI1yLfedVvqrKtf1Pt5n0DxKduTA0v+xxUkFlJCHRWbhD9FRSado1WyrACjFw8jtg+rr6sXyu841VcBKpTIY+LzzFFxd9iGK97k1/4oo=
+  on:
+    tags: true
