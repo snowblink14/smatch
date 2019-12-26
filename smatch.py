@@ -8,12 +8,9 @@ For detailed description of smatch, see http://www.isi.edu/natural-language/amr/
 
 """
 
-from __future__ import print_function
-from __future__ import division
+import random
 
 import amr
-import os
-import random
 import sys
 
 # total number of iteration in smatch computation
@@ -42,64 +39,6 @@ DEBUG_LOG = sys.stderr
 # key: tuples of node mapping
 # value: the matching triple count
 match_triple_dict = {}
-
-
-def build_arg_parser():
-    """
-    Build an argument parser using argparse. Use it when python version is 2.7 or later.
-
-    """
-    parser = argparse.ArgumentParser(description="Smatch calculator -- arguments")
-    parser.add_argument('-f', nargs=2, required=True, type=argparse.FileType('r'),
-                        help='Two files containing AMR pairs. AMRs in each file are separated by a single blank line')
-    parser.add_argument('-r', type=int, default=4, help='Restart number (Default:4)')
-    parser.add_argument('--significant', type=int, default=2, help='significant digits to output (default: 2)')
-    parser.add_argument('-v', action='store_true', help='Verbose output (Default:false)')
-    parser.add_argument('--vv', action='store_true', help='Very Verbose output (Default:false)')
-    parser.add_argument('--ms', action='store_true', default=False,
-                        help='Output multiple scores (one AMR pair a score)'
-                             'instead of a single document-level smatch score (Default: false)')
-    parser.add_argument('--pr', action='store_true', default=False,
-                        help="Output precision and recall as well as the f-score. Default: false")
-    parser.add_argument('--justinstance', action='store_true', default=False,
-                        help="just pay attention to matching instances")
-    parser.add_argument('--justattribute', action='store_true', default=False,
-                        help="just pay attention to matching attributes")
-    parser.add_argument('--justrelation', action='store_true', default=False,
-                        help="just pay attention to matching relations")
-
-    return parser
-
-
-def build_arg_parser2():
-    """
-    Build an argument parser using optparse. Use it when python version is 2.5 or 2.6.
-
-    """
-    usage_str = "Smatch calculator -- arguments"
-    parser = optparse.OptionParser(usage=usage_str)
-    parser.add_option("-f", "--files", nargs=2, dest="f", type="string",
-                      help='Two files containing AMR pairs. AMRs in each file are ' \
-                           'separated by a single blank line. This option is required.')
-    parser.add_option("-r", "--restart", dest="r", type="int", help='Restart number (Default: 4)')
-    parser.add_option('--significant', dest="significant", type="int", default=2,
-                      help='significant digits to output (default: 2)')
-    parser.add_option("-v", "--verbose", action='store_true', dest="v", help='Verbose output (Default:False)')
-    parser.add_option("--vv", "--veryverbose", action='store_true', dest="vv",
-                      help='Very Verbose output (Default:False)')
-    parser.add_option("--ms", "--multiple_score", action='store_true', dest="ms",
-                      help='Output multiple scores (one AMR pair a score) instead of ' \
-                           'a single document-level smatch score (Default: False)')
-    parser.add_option('--pr', "--precision_recall", action='store_true', dest="pr",
-                      help="Output precision and recall as well as the f-score. Default: false")
-    parser.add_option('--justinstance', action='store_true', default=False,
-                      help="just pay attention to matching instances")
-    parser.add_option('--justattribute', action='store_true', default=False,
-                      help="just pay attention to matching attributes")
-    parser.add_option('--justrelation', action='store_true', default=False,
-                      help="just pay attention to matching relations")
-    parser.set_defaults(r=4, v=False, ms=False, pr=False)
-    return parser
 
 
 def get_best_match(instance1, attribute1, relation1,
@@ -854,36 +793,62 @@ def main(arguments):
 
 
 if __name__ == "__main__":
-    parser = None
-    args = None
-    # use optparse if python version is 2.5 or 2.6
-    if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-        import optparse
+    import argparse
 
-        if len(sys.argv) == 1:
-            print("No argument given. Please run smatch.py -h to see the argument description.", file=ERROR_LOG)
-            exit(1)
-        parser = build_arg_parser2()
-        (args, opts) = parser.parse_args()
-        file_handle = []
-        if args.f is None:
-            print("smatch.py requires -f option to indicate two files \
-                                             containing AMR as input. Please run smatch.py -h to  \
-                                             see the argument description.", file=ERROR_LOG)
-            exit(1)
-        # assert there are 2 file names following -f.
-        assert (len(args.f) == 2)
-        for file_path in args.f:
-            if not os.path.exists(file_path):
-                print("Given file", args.f[0], "does not exist", file=ERROR_LOG)
-                exit(1)
-            file_handle.append(open(file_path, encoding='utf8'))
-        # use opened files
-        args.f = tuple(file_handle)
-    #  use argparse if python version is 2.7 or later
-    else:
-        import argparse
+    parser = argparse.ArgumentParser(description="Smatch calculator")
+    parser.add_argument(
+        '-f',
+        nargs=2,
+        required=True,
+        type=argparse.FileType('r'),
+        help=('Two files containing AMR pairs. '
+              'AMRs in each file are separated by a single blank line'))
+    parser.add_argument(
+        '-r',
+        type=int,
+        default=4,
+        help='Restart number (Default:4)')
+    parser.add_argument(
+        '--significant',
+        type=int,
+        default=2,
+        help='significant digits to output (default: 2)')
+    parser.add_argument(
+        '-v',
+        action='store_true',
+        help='Verbose output (Default:false)')
+    parser.add_argument(
+        '--vv',
+        action='store_true',
+        help='Very Verbose output (Default:false)')
+    parser.add_argument(
+        '--ms',
+        action='store_true',
+        default=False,
+        help=('Output multiple scores (one AMR pair a score) '
+              'instead of a single document-level smatch score '
+              '(Default: false)'))
+    parser.add_argument(
+        '--pr',
+        action='store_true',
+        default=False,
+        help=('Output precision and recall as well as the f-score. '
+              'Default: false'))
+    parser.add_argument(
+        '--justinstance',
+        action='store_true',
+        default=False,
+        help="just pay attention to matching instances")
+    parser.add_argument(
+        '--justattribute',
+        action='store_true',
+        default=False,
+        help="just pay attention to matching attributes")
+    parser.add_argument(
+        '--justrelation',
+        action='store_true',
+        default=False,
+        help="just pay attention to matching relations")
 
-        parser = build_arg_parser()
-        args = parser.parse_args()
+    args = parser.parse_args()
     main(args)
