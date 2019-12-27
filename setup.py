@@ -39,8 +39,7 @@ setup(name="smatch",
           'Topic :: Text Processing :: Linguistic',
           'Topic :: Utilities'
       ],
-      keywords='nlp semantics amr',
+      keywords='nlp semantics amr evaluation',
       py_modules=["smatch", "amr"],
       scripts=["smatch.py"],
       )
-

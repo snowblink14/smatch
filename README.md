@@ -5,9 +5,9 @@
 
 [Smatch](http://amr.isi.edu/evaluation.html) is an evaluation tool for
 [AMR](http://amr.isi.edu/) (Abstract Meaning Representation). It
-estimates the similarity of two AMR graphs in terms of their matching
-triples (edges) by finding a variable (node) mapping that maximizes
-the count, `M`, of matching triples, then:
+computes the Smatch score (defined below) of two AMR graphs in terms
+of their matching triples (edges) by finding a variable (node) mapping
+that maximizes the count, `M`, of matching triples, then:
 
 * `M` is the number of matching triples
 * `G` is the total number of triples in the first AMR
@@ -104,5 +104,6 @@ And here are other evaluation metrics for AMR:
 * [freesunshine0316/sembleu](https://github.com/freesunshine0316/sembleu)
   is inspired by BLEU and puts more weight on "content" than
   graph-structure similarity
-* https://github.com/rafaelanchieta/sema/ weights error types
-  differently and does not consider which node is the graph's top
+* [rafaelanchieta/sema](https://github.com/rafaelanchieta/sema/)
+  weights error types differently and does not consider which node is
+  the graph's top
