@@ -10,8 +10,8 @@ of their matching triples (edges) by finding a variable (node) mapping
 that maximizes the count, `M`, of matching triples, then:
 
 * `M` is the number of matching triples
-* `G` is the total number of triples in the first AMR
-* `T` is the total number of triples in the second AMR
+* `T` is the total number of triples in the first AMR
+* `G` is the total number of triples in the second AMR
 * Precision is defined as `P = M/T`
 * Recall is defined as `R = M/G`
 * The Smatch score is the F-score: `F = 2 * (P*R)/(P+R)`
@@ -36,7 +36,7 @@ To use the script, run it with at least the `-f` option, which takes
 two filename arguments:
 
 ``` console
-$ smatch.py -f gold.amr test.amr
+$ smatch.py -f test.amr gold.amr
 ```
 
 Note that the order of these arguments does not matter for the Smatch
