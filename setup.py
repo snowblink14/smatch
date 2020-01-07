@@ -14,7 +14,8 @@ with open(os.path.join(here, "README.md")) as f:
 
 
 setup(name="smatch",
-      version="1.0",
+      use_scm_version=True,
+      setup_requires=['setuptools_scm'],
       description="Smatch (semantic match) tool",
       long_description=README,
       author="Shu Cai",
