@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import sys
 import os
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from disutils.core import setup
+
+from setuptools import setup
 
 
 here = os.path.abspath(os.path.dirname(__file__))
