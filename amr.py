@@ -203,6 +203,23 @@ class AMR(object):
         # Last significant symbol is / --- start processing node value (concept name)
         # Last significant symbol is ) --- current node processing is complete
         # Note that if these symbols are inside parenthesis, they are not significant symbols.
+        
+        exceptions =set(["prep-on-behalf-of", "prep-out-of", "consist-of"])
+        def update_triple(node_relation_dict, (u, r, v)):
+            # we detect a relation (r) between u and v, with direction u to v.
+            # in most cases, if relation name ends with "-of", e.g."arg0-of",
+            # it is reverse of some relation. For example, if a is "arg0-of" b,
+            # we can also say b is "arg0" a.
+            # If the relation name ends with "-of", we store the reverse relation.
+            # but note some exceptions like "prep-on-behalf-of" and "prep-out-of"
+            # also note relation "mod" is the reverse of "domain"
+            if r.endswith("-of") and not r in exceptions:
+                node_relation_dict[v].append((r[:-3], u))
+            elif r=="mod":
+                node_relation_dict[v].append(("domain", u))
+            else:
+                node_relation_dict[u].append((r, v))
+
         state = 0
         # node stack for parsing
         stack = []
@@ -291,9 +308,9 @@ class AMR(object):
                         return None
                     # if we have not seen this node name before
                     if relation_value not in node_dict:
-                        node_relation_dict2[stack[-1]].append((relation_name, relation_value))
+                        update_triple(node_relation_dict2, (stack[-1], relation_name, relation_value))
                     else:
-                        node_relation_dict1[stack[-1]].append((relation_name, relation_value))
+                        update_triple(node_relation_dict1, (stack[-1], relation_name, relation_value))
                 state = 2
             elif c == "/":
                 if in_quote:
@@ -321,17 +338,7 @@ class AMR(object):
                     # node name is n
                     # we have a relation arg1(upper level node, n)
                     if cur_relation_name != "":
-                        # if relation name ends with "-of", e.g."arg0-of",
-                        # it is reverse of some relation. For example, if a is "arg0-of" b,
-                        # we can also say b is "arg0" a.
-                        # If the relation name ends with "-of", we store the reverse relation.
-                        if not cur_relation_name.endswith("-of"):
-                            # stack[-2] is upper_level node we encountered, as we just add node_name to stack
-                            node_relation_dict1[stack[-2]].append((cur_relation_name, node_name))
-                        else:
-                            # cur_relation_name[:-3] is to delete "-of"
-                            node_relation_dict1[node_name].append((cur_relation_name[:-3], stack[-2]))
-                        # clear current_relation_name
+                        update_triple(node_relation_dict1, (stack[-2], cur_relation_name, node_name))
                         cur_relation_name = ""
                 else:
                     # error if in other state
@@ -359,17 +366,13 @@ class AMR(object):
                         return None
                     relation_name = parts[0].strip()
                     relation_value = parts[1].strip()
-                    # store reverse of the relation
-                    # we are sure relation_value is a node here, as "-of" relation is only between two nodes
-                    if relation_name.endswith("-of"):
-                        node_relation_dict1[relation_value].append((relation_name[:-3], stack[-1]))
                     # attribute value not seen before
                     # Note that it might be a constant attribute value, or an unseen node
                     # process this after we have seen all the node names
-                    elif relation_value not in node_dict:
-                        node_relation_dict2[stack[-1]].append((relation_name, relation_value))
+                    if relation_value not in node_dict:
+                        update_triple(node_relation_dict2, (stack[-1], relation_name, relation_value))
                     else:
-                        node_relation_dict1[stack[-1]].append((relation_name, relation_value))
+                        update_triple(node_relation_dict1, (stack[-1], relation_name, relation_value))
                 # Last significant symbol is "/". Now we encounter ")"
                 # Example:
                 # :arg1 (n / nation)
