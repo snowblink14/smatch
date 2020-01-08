@@ -3,8 +3,13 @@
 
 ## Unreleased
 
-(no unreleased changes yet)
+* Smatch version is taken from git tag (see [#22][])
+* Add CI/CD configuration
+* Better handle deinversion of special roles ([#10][])
 
+## [1.0.2][]
+
+* Windows support ([#19][])
 
 ## [1.0.1][]
 
@@ -154,5 +159,7 @@ The following are taken from an old `update_log` file:
 
 [#5]: https://github.com/snowblink14/smatch/issues/5
 [#7]: https://github.com/snowblink14/smatch/issues/7
+[#10]: https://github.com/snowblink14/smatch/issues/10
 [#14]: https://github.com/snowblink14/smatch/issues/14
 [#19]: https://github.com/snowblink14/smatch/issues/19
+[#22]: https://github.com/snowblink14/smatch/issues/22
