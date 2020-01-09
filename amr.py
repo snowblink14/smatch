@@ -84,7 +84,7 @@ class AMR(object):
         for node_relations in self.relations:
             for i, l in enumerate(node_relations):
                 node_relations[i][1] = node_map_dict[l[1]]
-  
+
     def get_triples(self):
         """
         Get the triples in three lists.
@@ -203,9 +203,9 @@ class AMR(object):
         # Last significant symbol is / --- start processing node value (concept name)
         # Last significant symbol is ) --- current node processing is complete
         # Note that if these symbols are inside parenthesis, they are not significant symbols.
-        
+
         exceptions =set(["prep-on-behalf-of", "prep-out-of", "consist-of"])
-        def update_triple(node_relation_dict, (u, r, v)):
+        def update_triple(node_relation_dict, u, r, v):
             # we detect a relation (r) between u and v, with direction u to v.
             # in most cases, if relation name ends with "-of", e.g."arg0-of",
             # it is reverse of some relation. For example, if a is "arg0-of" b,
@@ -308,9 +308,9 @@ class AMR(object):
                         return None
                     # if we have not seen this node name before
                     if relation_value not in node_dict:
-                        update_triple(node_relation_dict2, (stack[-1], relation_name, relation_value))
+                        update_triple(node_relation_dict2, stack[-1], relation_name, relation_value)
                     else:
-                        update_triple(node_relation_dict1, (stack[-1], relation_name, relation_value))
+                        update_triple(node_relation_dict1, stack[-1], relation_name, relation_value)
                 state = 2
             elif c == "/":
                 if in_quote:
@@ -338,7 +338,7 @@ class AMR(object):
                     # node name is n
                     # we have a relation arg1(upper level node, n)
                     if cur_relation_name != "":
-                        update_triple(node_relation_dict1, (stack[-2], cur_relation_name, node_name))
+                        update_triple(node_relation_dict1, stack[-2], cur_relation_name, node_name)
                         cur_relation_name = ""
                 else:
                     # error if in other state
@@ -370,9 +370,9 @@ class AMR(object):
                     # Note that it might be a constant attribute value, or an unseen node
                     # process this after we have seen all the node names
                     if relation_value not in node_dict:
-                        update_triple(node_relation_dict2, (stack[-1], relation_name, relation_value))
+                        update_triple(node_relation_dict2, stack[-1], relation_name, relation_value)
                     else:
-                        update_triple(node_relation_dict1, (stack[-1], relation_name, relation_value))
+                        update_triple(node_relation_dict1, stack[-1], relation_name, relation_value)
                 # Last significant symbol is "/". Now we encounter ")"
                 # Example:
                 # :arg1 (n / nation)
