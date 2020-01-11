@@ -2,11 +2,13 @@
 
 from __future__ import print_function
 
-import amr
 import sys
-import smatch
 import os
 import time
+
+import amr
+import smatch
+
 
 ERROR_LOG = sys.stderr
 
@@ -86,8 +88,8 @@ def compute_files(user1, user2, file_list, dir_pre, start_num):
         except IOError:
             print("Cannot open the files", file1, file2, file=ERROR_LOG)
             break
-        cur_amr1 = smatch.get_amr_line(file1_h)
-        cur_amr2 = smatch.get_amr_line(file2_h)
+        cur_amr1 = amr.AMR.get_amr_line(file1_h)
+        cur_amr2 = amr.AMR.get_amr_line(file2_h)
         if cur_amr1 == "":
             print("AMR 1 is empty", file=ERROR_LOG)
             continue
@@ -164,23 +166,6 @@ def build_arg_parser():
     return parser
 
 
-def build_arg_parser2():
-    """
-    Build an argument parser using optparse. Use it when python version is 2.5 or 2.6.
-
-    """
-    usage_str = "Smatch table calculator -- arguments"
-    parser = optparse.OptionParser(usage=usage_str)
-    parser.add_option("--fl", dest="fl", type="string", help='AMR ID list file')
-    parser.add_option("-f", dest="f", type="string", action="callback", callback=cb, help="AMR IDs (at least one)")
-    parser.add_option("-p", dest="p", type="string", action="callback", callback=cb, help="User list")
-    parser.add_option("--fd", dest="fd", type="string", help="file directory")
-    parser.add_option("-r", "--restart", dest="r", type="int", help='Restart number (Default: 4)')
-    parser.add_option("-v", "--verbose", action='store_true', dest="v", help='Verbose output (Default:False)')
-    parser.set_defaults(r=4, v=False, ms=False, fd=isi_dir_pre)
-    return parser
-
-
 def cb(option, value, parser):
     """
     Callback function to handle variable number of arguments in optparse
@@ -224,8 +209,8 @@ def check_args(args):
         if len(names) == 0:
             print("Cannot find any user who tagged these AMR", file=ERROR_LOG)
             return [], [], False
-        else:
-            names = args.p
+    else:
+        names = args.p
     if len(names) == 0:
         print("No user was given", file=ERROR_LOG)
         return [], [], False
@@ -277,9 +262,9 @@ def main(arguments):
         table[i+1].append(names[i])
         for j in range(0, len_name):
             if i != j:
-                start = time.clock()
+                start = time.time()
                 table[i+1].append(compute_files(names[i], names[j], ids, args.fd, args.r))
-                end = time.clock()
+                end = time.time()
                 if table[i+1][-1] != -1.0:
                     acc_time += end-start
             else:
@@ -298,36 +283,18 @@ def main(arguments):
 
 
 if __name__ == "__main__":
-    whole_start = time.clock()
+    whole_start = time.time()
     parser = None
     args = None
-    if sys.version_info[:2] != (2, 7):
-        # requires python version >= 2.5
-        if sys.version_info[0] != 2 or sys.version_info[1] < 5:
-            print("This program requires python 2.5 or later to run. ", file=ERROR_LOG)
-            exit(1)
-        import optparse
-        parser = build_arg_parser2()
-        (args, opts) = parser.parse_args()
-        file_handle = None
-        if args.fl is not None:
-            try:
-                file_handle = open(args.fl, "r")
-                args.fl = file_handle
-            except IOError:
-                print("The ID list file", args.fl, "does not exist", file=ERROR_LOG)
-                args.fl = None
-    # python version 2.7
-    else:
-        import argparse
-        parser = build_arg_parser()
-        args = parser.parse_args()
+    import argparse
+    parser = build_arg_parser()
+    args = parser.parse_args()
     # Regularize fd, add "/" at the end if needed
     if args.fd[-1] != "/":
         args.fd += "/"
     # acc_time is the smatch calculation time
     acc_time = main(args)
-    whole_end = time.clock()
+    whole_end = time.time()
     # time of the whole running process
     whole_time = whole_end - whole_start
     # print if needed
