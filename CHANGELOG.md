@@ -4,8 +4,9 @@
 ## Unreleased
 
 * Smatch version is taken from git tag (see [#22][])
-* Add CI/CD configuration
+* Add CI/CD configuration (see PR [#23][])
 * Better handle deinversion of special roles ([#10][])
+* Get `smatch-table.py` working again (part of PR [#27][])
 
 ## [1.0.2][]
 
@@ -154,6 +155,7 @@ The following are taken from an old `update_log` file:
   No change of interface
 
 
+[1.0.2]: https://pypi.org/project/smatch/1.0.2/
 [1.0.1]: https://pypi.org/project/smatch/1.0.1/
 [1.0]: https://pypi.org/project/smatch/1.0.post2/
 
@@ -163,3 +165,6 @@ The following are taken from an old `update_log` file:
 [#14]: https://github.com/snowblink14/smatch/issues/14
 [#19]: https://github.com/snowblink14/smatch/issues/19
 [#22]: https://github.com/snowblink14/smatch/issues/22
+[#23]: https://github.com/snowblink14/smatch/pull/23
+[#27]: https://github.com/snowblink14/smatch/pull/27
+
