@@ -8,6 +8,7 @@
 * Better handle deinversion of special roles ([#10][])
 * Get `smatch-table.py` working again (part of PR [#27][])
 * Add `tests/` subdirectory and `test_top.py` ([#25])
+* Make TOP relation an attribute of the top variable ([#25])
 
 ## [1.0.2][]
 
