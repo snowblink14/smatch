@@ -169,5 +169,5 @@ The following are taken from an old `update_log` file:
 [#22]: https://github.com/snowblink14/smatch/issues/22
 [#23]: https://github.com/snowblink14/smatch/pull/23
 [#27]: https://github.com/snowblink14/smatch/pull/27
-[#31]: https://github.com/snowblink14/smatch/pull/31
+[#31]: https://github.com/snowblink14/smatch/issues/31
 
