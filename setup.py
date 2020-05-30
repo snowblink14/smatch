@@ -21,7 +21,7 @@ setup(name="smatch",
       url="https://github.com/snowblink14/smatch",
       license="MIT",
       classifiers=[
-          'Development Status :: 5 - Production/Stable'
+          'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
           'Intended Audience :: Developers',
           'Intended Audience :: Information Technology',
