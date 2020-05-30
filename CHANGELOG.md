@@ -7,6 +7,9 @@
 * Add CI/CD configuration (see PR [#23][])
 * Better handle deinversion of special roles ([#10][])
 * Get `smatch-table.py` working again (part of PR [#27][])
+* Add `tests/` subdirectory and `test_top.py` ([#25])
+* Make TOP relation's value a constant string and not the top node's
+  concept to avoid double-penalizing different top concepts ([#25])
 
 ## [1.0.2][]
 
@@ -166,5 +169,6 @@ The following are taken from an old `update_log` file:
 [#19]: https://github.com/snowblink14/smatch/issues/19
 [#22]: https://github.com/snowblink14/smatch/issues/22
 [#23]: https://github.com/snowblink14/smatch/pull/23
+[#25]: https://github.com/snowblink14/smatch/pull/25
 [#27]: https://github.com/snowblink14/smatch/pull/27
 

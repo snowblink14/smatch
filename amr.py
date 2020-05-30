@@ -420,8 +420,8 @@ class AMR(object):
             # each node has a relation list and attribute list
             relation_list.append(node_rel_list)
             attribute_list.append(node_attr_list)
-        # add TOP as an attribute. The attribute value is the top node value
-        attribute_list[0].append(["TOP", node_value_list[0]])
+        # add TOP as an attribute. The attribute value just needs to be constant
+        attribute_list[0].append(["TOP", 'top'])
         result_amr = AMR(node_name_list, node_value_list, relation_list, attribute_list)
         return result_amr
 
