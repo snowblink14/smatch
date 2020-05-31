@@ -5,14 +5,19 @@
 
 (no unreleased changes yet)
 
+## [1.0.4]
+
+**Release date: 2020-05-30**
+
+* Python 2 support is removed ([#31])
+* Python 3.8 support is added
+
 ## [1.0.3]
 
 **Release date: 2020-05-30**
 
 > Note: due to an issue with deployment, this was released as v1.0.3.2
 
-* Python 2 support is removed ([#31])
-* Python 3.8 support is added
 * Smatch version is taken from git tag (see [#22])
 * Add CI/CD configuration (see PR [#23])
 * Better handle deinversion of special roles ([#10])
@@ -174,6 +179,7 @@ The following are taken from an old `update_log` file:
   No change of interface
 
 
+[1.0.4]: https://pypi.org/project/smatch/1.0.4/
 [1.0.3]: https://pypi.org/project/smatch/1.0.3.2/
 [1.0.2]: https://pypi.org/project/smatch/1.0.2/
 [1.0.1]: https://pypi.org/project/smatch/1.0.1/
