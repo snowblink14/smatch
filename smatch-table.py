@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 import sys
 import os
 import time
 
 import amr
 import smatch
-
 
 ERROR_LOG = sys.stderr
 
@@ -151,21 +148,6 @@ def pprint_table(table):
         print("\n")
 
 
-def build_arg_parser():
-    """
-    Build an argument parser using argparse. Use it when python version is 2.7 or later.
-
-    """
-    parser = argparse.ArgumentParser(description="Smatch table calculator -- arguments")
-    parser.add_argument("--fl", type=argparse.FileType('r'), help='AMR ID list file')
-    parser.add_argument('-f', nargs='+', help='AMR IDs (at least one)')
-    parser.add_argument("-p", nargs='*', help="User list (can be none)")
-    parser.add_argument("--fd", default=isi_dir_pre, help="AMR File directory. Default=location on isi machine")
-    parser.add_argument('-r', type=int, default=4, help='Restart number (Default:4)')
-    parser.add_argument('-v', action='store_true', help='Verbose output (Default:False)')
-    return parser
-
-
 def cb(option, value, parser):
     """
     Callback function to handle variable number of arguments in optparse
@@ -262,9 +244,9 @@ def main(arguments):
         table[i+1].append(names[i])
         for j in range(0, len_name):
             if i != j:
-                start = time.time()
+                start = time.perf_counter()
                 table[i+1].append(compute_files(names[i], names[j], ids, args.fd, args.r))
-                end = time.time()
+                end = time.perf_counter()
                 if table[i+1][-1] != -1.0:
                     acc_time += end-start
             else:
@@ -283,22 +265,50 @@ def main(arguments):
 
 
 if __name__ == "__main__":
-    whole_start = time.time()
-    parser = None
-    args = None
+    whole_start = time.perf_counter()
+
     import argparse
-    parser = build_arg_parser()
+
+    parser = argparse.ArgumentParser(description="Smatch table calculator")
+    parser.add_argument(
+        "--fl",
+        type=argparse.FileType('r'),
+        help='AMR ID list file')
+    parser.add_argument(
+        '-f',
+        nargs='+',
+        help='AMR IDs (at least one)')
+    parser.add_argument(
+        "-p",
+        nargs='*',
+        help="User list (can be none)")
+    parser.add_argument(
+        "--fd",
+        default=isi_dir_pre,
+        help="AMR File directory. Default=location on isi machine")
+    parser.add_argument(
+        '-r',
+        type=int,
+        default=4,
+        help='Restart number (Default:4)')
+    parser.add_argument(
+        '-v',
+        action='store_true',
+        help='Verbose output (Default:False)')
+
     args = parser.parse_args()
+
     # Regularize fd, add "/" at the end if needed
     if args.fd[-1] != "/":
         args.fd += "/"
+
     # acc_time is the smatch calculation time
     acc_time = main(args)
-    whole_end = time.time()
+    whole_end = time.perf_counter()
     # time of the whole running process
     whole_time = whole_end - whole_start
+
     # print if needed
     # print("Accumulated computation time", acc_time, file=ERROR_LOG)
     # print("Total time", whole_time, file=ERROR_LOG)
     # print("Percentage", float(acc_time)/float(whole_time), file=ERROR_LOG)
-

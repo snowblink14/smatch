@@ -3,6 +3,8 @@
 
 ## Unreleased
 
+* Python 2 support is removed ([#31])
+* Python 3.8 support is added
 * Smatch version is taken from git tag (see [#22][])
 * Add CI/CD configuration (see PR [#23][])
 * Better handle deinversion of special roles ([#10][])
@@ -171,4 +173,5 @@ The following are taken from an old `update_log` file:
 [#23]: https://github.com/snowblink14/smatch/pull/23
 [#25]: https://github.com/snowblink14/smatch/pull/25
 [#27]: https://github.com/snowblink14/smatch/pull/27
+[#31]: https://github.com/snowblink14/smatch/issues/31
 
