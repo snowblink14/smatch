@@ -3,26 +3,40 @@
 
 ## Unreleased
 
-* Smatch version is taken from git tag (see [#22][])
-* Add CI/CD configuration (see PR [#23][])
-* Better handle deinversion of special roles ([#10][])
-* Get `smatch-table.py` working again (part of PR [#27][])
+(no unreleased changes yet)
+
+## [1.0.3]
+
+**Release date: 2020-05-30**
+
+> Note: due to an issue with deployment, this was released as v1.0.3.2
+
+* Smatch version is taken from git tag (see [#22])
+* Add CI/CD configuration (see PR [#23])
+* Better handle deinversion of special roles ([#10])
+* Get `smatch-table.py` working again (part of PR [#27])
 * Add `tests/` subdirectory and `test_top.py` ([#25])
 * Make TOP relation's value a constant string and not the top node's
   concept to avoid double-penalizing different top concepts ([#25])
 
-## [1.0.2][]
+## [1.0.2]
 
-* Windows support ([#19][])
+**Release date: 2019-12-24**
 
-## [1.0.1][]
+* Windows support ([#19])
 
-* Refactor to allow programmatic usage ([#14][])
+## [1.0.1]
+
+**Release date: 2018-08-21**
+
+* Refactor to allow programmatic usage ([#14])
 
 
-## [1.0][]
+## [1.0]
 
-* Add Smatch to PyPI ([#5][])
+**Release date: 2018-08-12**
+
+* Add Smatch to PyPI ([#5])
 
 
 ## Pre-1.0
@@ -158,6 +172,7 @@ The following are taken from an old `update_log` file:
   No change of interface
 
 
+[1.0.3]: https://pypi.org/project/smatch/1.0.3.2/
 [1.0.2]: https://pypi.org/project/smatch/1.0.2/
 [1.0.1]: https://pypi.org/project/smatch/1.0.1/
 [1.0]: https://pypi.org/project/smatch/1.0.post2/
