@@ -108,5 +108,5 @@ And here are other evaluation metrics for AMR:
   weights error types differently and does not consider which node is
   the graph's top
 * [flipz357/amr-metric-suite](https://github.com/flipz357/amr-metric-suite)
-  Soft Smatch: S^2match: computes Smatch alignment and Smatch graph similarity 
+  Soft Smatch (S^2match): computes Smatch alignment and Smatch graph similarity 
   with graded concept match via Glove embeddings (e.g., enemy - foe).
