@@ -536,6 +536,10 @@ def get_best_gain(mapping, candidate_mappings, weight_dict, instance_len, cur_ma
     for i, m in enumerate(mapping):
         for j in range(i + 1, len(mapping)):
             m2 = mapping[j]
+            # no need to compute swap gain if both (i, m2) (j, m) are not in candidate mappings
+            # such a swap cannot incur any gains
+            if (m2 not in candidate_mappings[i]) and (m not in candidate_mappings[j]):
+                continue
             # swap operation (i, m) (j, m2) -> (i, m2) (j, m)
             # j starts from i+1, to avoid duplicate swap
             if veryVerbose:
